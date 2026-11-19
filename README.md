@@ -64,7 +64,7 @@ Read [SECURITY.md](SECURITY.md). Household preferences and checklists stay in br
 
 ## Submission status
 
-Code, research, guided-mode tests and local real-data integration are complete. GitHub public publishing requires refreshing the invalid CLI login. Generative AI configuration and actual Codex Security scanning are pending their integrations. A public demo video and LinkedIn post need separate publishing; no placeholder URLs should be submitted.
+Code, research, guided-mode tests and local real-data integration are complete. The public GitHub repository and public Vercel production deployment are published and verified. Generative AI configuration and actual Codex Security scanning are pending their integrations. A public demo video and LinkedIn post need separate publishing; no placeholder URLs should be submitted.
 
 ## Vercel deployment
 

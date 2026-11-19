@@ -53,7 +53,9 @@
     "public_access": "Explicitly approved; verified without authentication"
   },
   "github": {
-    "published": false,
-    "reason": "Existing GitHub CLI login token is invalid"
+    "published": true,
+    "public": true,
+    "url": "https://github.com/abhishek-0706/breathe-smog-companion",
+    "branch": "main"
   }
 }

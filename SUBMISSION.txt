@@ -3,11 +3,8 @@ SUBMISSION WORKSHEET — BREATHE
 Challenge: Select the severe winter smog / urban air pollution assistant challenge in the platform list.
 
 Public GitHub Repository Link:
-PENDING. GitHub CLI account abhishek-0706 has an invalid login token. Authenticate interactively in your terminal:
-  gh auth login --hostname github.com --web --git-protocol https
-Then, from this project's folder after reviewing its public contents:
-  gh repo create breathe-smog-companion --public --source . --remote github --push
-Use the actual returned public https://github.com/... URL. Do not use a private Sites source-repository URL. This folder contains no resume documents; it is isolated from the parent workspace.
+https://github.com/abhishek-0706/breathe-smog-companion
+VERIFIED PUBLIC. Source code is below 10 MB; local environment files and runtime credentials are excluded.
 
 Project Deployed Link:
 https://breathe-smog-companion.vercel.app
