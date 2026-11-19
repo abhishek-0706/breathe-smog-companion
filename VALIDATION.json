@@ -21,7 +21,7 @@
   },
   "real_data": {
     "provider": "Open-Meteo / CAMS",
-    "integration": "Verified HTTP 200 from local app and authenticated hosted Vercel endpoint with actual provider data",
+    "integration": "Verified HTTP 200 from local app and public Vercel endpoint with actual provider data",
     "kind": "Live retrieved modeled outdoor estimate, not a sensor reading",
     "fake_fallback": false
   },
@@ -48,9 +48,9 @@
     "verified": true,
     "platform": "Vercel",
     "state": "READY",
-    "audience": "Vercel authentication on every URL",
-    "unauthenticated_probe_http_status": 302,
-    "public_access": "Pending explicit approval"
+    "audience": "Public production URL; preview deployments require authentication",
+    "unauthenticated_probe_http_status": 200,
+    "public_access": "Explicitly approved; verified without authentication"
   },
   "github": {
     "published": false,

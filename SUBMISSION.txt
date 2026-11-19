@@ -11,7 +11,7 @@ Use the actual returned public https://github.com/... URL. Do not use a private 
 
 Project Deployed Link:
 https://breathe-smog-companion.vercel.app
-VERIFIED VERCEL DEPLOYMENT, CURRENTLY AUTHENTICATED ACCESS ONLY. Public access awaits explicit approval; this protected link is not ready for evaluator submission. Hosted frontend assets and the real Open-Meteo/CAMS endpoint have been checked.
+VERIFIED PUBLIC VERCEL DEPLOYMENT. Homepage and real Open-Meteo/CAMS endpoint return HTTP 200 without authentication. Preview deployment URLs remain protected.
 
 Project Demo Video Submission:
 PENDING. Record the walkthrough in DEMO_SCRIPT.txt, upload to unlisted YouTube or an appropriately shared Drive file, and paste its actual https URL. Do not substitute a screenshot, fabricated URL or repository link.

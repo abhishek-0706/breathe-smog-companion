@@ -68,6 +68,6 @@ Code, research, guided-mode tests and local real-data integration are complete. 
 
 ## Vercel deployment
 
-The app is deployed at https://breathe-smog-companion.vercel.app in the owner's Vercel account. All URLs currently require Vercel authentication; public challenge access awaits explicit approval. `vercel.json`, `api/index.mjs` and `scripts/build-vercel.mjs` provide a Node function adapter and static frontend. Hosted real-data responses were verified. Both `.env.local` and `.vercel/` are excluded from Git and deployment uploads.
+The app is deployed at https://breathe-smog-companion.vercel.app in the owner's Vercel account. The production URL is public with explicit owner approval; preview deployment URLs retain Vercel authentication. `vercel.json`, `api/index.mjs` and `scripts/build-vercel.mjs` provide a Node function adapter and static frontend. Hosted real-data responses were verified. Both `.env.local` and `.vercel/` are excluded from Git and deployment uploads.
 
 The Vercel AI Gateway eligibility probe returned HTTP 403 `customer_verification_required` because account card verification is required. No Gateway model output was generated. This version retains the direct OpenAI Responses integration and its clearly labeled guided fallback. Do not claim that Vercel Gateway or live GenAI is active.
