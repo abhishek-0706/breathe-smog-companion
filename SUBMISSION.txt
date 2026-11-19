@@ -10,7 +10,8 @@ Then, from this project's folder after reviewing its public contents:
 Use the actual returned public https://github.com/... URL. Do not use a private Sites source-repository URL. This folder contains no resume documents; it is isolated from the parent workspace.
 
 Project Deployed Link:
-Deployment in progress. Replace this status with the VERIFIED deployment URL after publication. Evaluators must be able to open the link; check the final access policy.
+https://breathe-well-daily.accenture-gt-3643.chatgpt.site
+VERIFIED DEPLOYED, CURRENTLY PRIVATE. Public access awaits explicit owner approval; this private link is not ready for evaluator submission.
 
 Project Demo Video Submission:
 PENDING. Record the walkthrough in DEMO_SCRIPT.txt, upload to unlisted YouTube or an appropriately shared Drive file, and paste its actual https URL. Do not substitute a screenshot, fabricated URL or repository link.
@@ -32,3 +33,4 @@ FINAL READINESS GATES
 - Demo video is accessible through unlisted YouTube or shared Drive.
 - LinkedIn post is published and its actual post URL is available.
 - Keep submission attempts within the platform's three-attempt limit.
+
