@@ -1,0 +1,6 @@
+﻿import {readFile,mkdir,writeFile} from 'node:fs/promises';
+const files={'/':['web/index.html','text/html; charset=utf-8'],'/app.js':['web/app.js','text/javascript; charset=utf-8'],'/style.css':['web/style.css','text/css; charset=utf-8'],'/guidance.js':['lib/guidance.mjs','text/javascript; charset=utf-8']};
+const assets={};for(const [route,[file,type]]of Object.entries(files))assets[route]={body:await readFile(file,'utf8'),type};
+let source=await readFile('worker/index.mjs','utf8');source=source.replace("import { assets } from './assets.mjs';",'const assets = '+JSON.stringify(assets)+';');source=source.replace("import { normalizeProfile, guidedReply } from '../lib/guidance.mjs';",(await readFile('lib/guidance.mjs','utf8')).replaceAll('export function','function'));
+await mkdir('dist/server',{recursive:true});await mkdir('dist/.openai',{recursive:true});
+await writeFile('dist/server/index.js',source);const manifest=JSON.parse(await readFile('.openai/hosting.json','utf8'));delete manifest.static;await writeFile('.openai/hosting.json',JSON.stringify(manifest,null,2)+'\n');await writeFile('dist/.openai/hosting.json',JSON.stringify(manifest,null,2)+'\n');console.log('Built dependency-free Worker and embedded assets.');

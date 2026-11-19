@@ -1,0 +1,18 @@
+﻿DRAFT — REVIEW BEFORE PUBLISHING
+
+I built Breathe, a clean-air companion for families and communities navigating winter smog.
+
+It turns household context and live modeled outdoor air quality into practical everyday decisions: lower-emission routines, cleaner indoor habits, neighbourhood commitments and a transparent impact calculator.
+
+A few details I cared about:
+• Clear source, timestamp and U.S. AQI labeling rather than presenting a model as a local sensor.
+• No invented readings when a provider fails.
+• Explicit assumptions behind carbon estimates; no promises of a numerical AQI improvement.
+• A 30-scenario research-backed golden dataset, including critical safety cases.
+• 49 passing automated checks and 12 desktop/mobile browser checks.
+
+The server-side OpenAI integration is implemented; runtime generative chat is pending configuration and evaluation. The current guided mode is explicitly labeled. Update this sentence only after verifying the final GenAI deployment.
+
+Add the VERIFIED public repository and deployment URLs here before publishing.
+
+#GenerativeAI #AirQuality #ResponsibleAI #Sustainability #BuildInPublic

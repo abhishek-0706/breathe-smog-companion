@@ -1,0 +1,11 @@
+﻿BREATHE — TWO-MINUTE WALKTHROUGH
+
+0:00–0:15: Show Overview. Explain that families need practical choices during winter smog and that Breathe combines local conditions, household context and explainable actions.
+0:15–0:35: Show modeled U.S. AQI, city, source and model time. Explain that Open-Meteo/CAMS is a real forecast/model feed, not a doorstep monitor or CPCB index. Open About this data.
+0:35–0:55: Open Make it personal. Change city, sensitive-household flag, budget and commute. Save and show routines change and a new data request. Do not present a loading/error state as current data.
+0:55–1:15: Open Indoor air and an action's Why link. Explain low-cost source control, safe ventilation and filtration limitations. Mark one routine complete.
+1:15–1:30: Open My impact. Move the distance slider; explain the EPA no-drive tailpipe CO2 proxy and why it does not predict local AQI reduction.
+1:30–1:45: Show a community pledge and download the neighbourhood note.
+1:45–2:00: Ask the companion a relevant question. State whether it is verified generative mode or curated guided mode. Show an emergency question routes to urgent help. Mention the 30 researched golden cases and test report without claiming clinical certification or a completed Codex Security scan.
+
+Before recording a final GenAI challenge demonstration, enable the actual OpenAI service and evaluate real generated answers. Record only synthetic household context; hide tokens and personal browser information. Upload to the submission's accepted video service with appropriate public/unlisted permissions.
