@@ -1,4 +1,4 @@
-﻿BREATHE — TWO-MINUTE WALKTHROUGH
+BREATHE — TWO-MINUTE WALKTHROUGH
 
 0:00–0:15: Show Overview. Explain that families need practical choices during winter smog and that Breathe combines local conditions, household context and explainable actions.
 0:15–0:35: Show modeled U.S. AQI, city, source and model time. Explain that Open-Meteo/CAMS is a real forecast/model feed, not a doorstep monitor or CPCB index. Open About this data.

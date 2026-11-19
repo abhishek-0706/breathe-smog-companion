@@ -1,11 +1,59 @@
-﻿{
+{
   "verified_on": "2026-11-19",
-  "automated_tests": {"total": 49, "passed": 49, "failed": 0, "command": "node --test --test-isolation=none tests/golden.test.mjs tests/security.test.mjs"},
-  "golden_dataset": {"cases": 30, "critical_cases": 15, "kind": "Researched synthetic scenarios with primary-source references", "coverage": "Selected lexical/behavioral assertions; not full semantic or clinical certification"},
-  "browser_checks": {"passed": 12, "desktop_width": 1600, "mobile_width": 390, "browser": "Microsoft Edge headless", "scope": "Overview, no overflow, settings, profile save and reload, checklist, calculator, community pledge, indoor page, emergency reply, mobile dialog"},
-  "real_data": {"provider": "Open-Meteo / CAMS", "integration": "Verified HTTP 200 from local app endpoint with actual provider data", "kind": "Live retrieved modeled outdoor estimate, not a sensor reading", "fake_fallback": false},
-  "genai": {"provider": "OpenAI Responses API", "configured": false, "live_model_evaluation": false, "current_mode": "Clearly labeled curated guided responses", "contract_tests": "Mocked, passed"},
-  "security": {"application_security_tests": "Passed", "known_secret_pattern_check": "Passed", "codex_security_scan": "Not run; plugin connection pending", "guarantee_of_no_vulnerabilities": false},
-  "deployment": {"url": "https://breathe-well-daily.accenture-gt-3643.chatgpt.site", "verified": true, "audience": "private", "public_access": "Pending explicit approval"},
-  "github": {"published": false, "reason": "Existing GitHub CLI login token is invalid"}
+  "automated_tests": {
+    "total": 52,
+    "passed": 52,
+    "failed": 0,
+    "command": "node --test --test-isolation=none tests/golden.test.mjs tests/security.test.mjs tests/vercel.test.mjs"
+  },
+  "golden_dataset": {
+    "cases": 30,
+    "critical_cases": 15,
+    "kind": "Researched synthetic scenarios with primary-source references",
+    "coverage": "Selected lexical/behavioral assertions; not full semantic or clinical certification"
+  },
+  "browser_checks": {
+    "passed": 12,
+    "desktop_width": 1600,
+    "mobile_width": 390,
+    "browser": "Microsoft Edge headless",
+    "scope": "Overview, no overflow, settings, profile save and reload, checklist, calculator, community pledge, indoor page, emergency reply, mobile dialog"
+  },
+  "real_data": {
+    "provider": "Open-Meteo / CAMS",
+    "integration": "Verified HTTP 200 from local app and authenticated hosted Vercel endpoint with actual provider data",
+    "kind": "Live retrieved modeled outdoor estimate, not a sensor reading",
+    "fake_fallback": false
+  },
+  "genai": {
+    "provider": "OpenAI Responses API",
+    "configured": false,
+    "live_model_evaluation": false,
+    "current_mode": "Clearly labeled curated guided responses",
+    "contract_tests": "Mocked, passed",
+    "vercel_gateway_probe": {
+      "http_status": 403,
+      "reason": "customer_verification_required",
+      "generated_response": false
+    }
+  },
+  "security": {
+    "application_security_tests": "Passed",
+    "known_secret_pattern_check": "Passed",
+    "codex_security_scan": "Not run; plugin connection pending",
+    "guarantee_of_no_vulnerabilities": false
+  },
+  "deployment": {
+    "url": "https://breathe-smog-companion.vercel.app",
+    "verified": true,
+    "platform": "Vercel",
+    "state": "READY",
+    "audience": "Vercel authentication on every URL",
+    "unauthenticated_probe_http_status": 302,
+    "public_access": "Pending explicit approval"
+  },
+  "github": {
+    "published": false,
+    "reason": "Existing GitHub CLI login token is invalid"
+  }
 }

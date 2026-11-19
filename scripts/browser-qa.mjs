@@ -1,4 +1,4 @@
-﻿import {writeFile} from 'node:fs/promises';
+import {writeFile} from 'node:fs/promises';
 const tabs=await(await fetch('http://127.0.0.1:9222/json')).json();const tab=tabs.find(t=>t.type==='page'&&t.url.includes('4173'));if(!tab)throw Error('App tab unavailable');
 const ws=new WebSocket(tab.webSocketDebuggerUrl);await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject});let seq=0;const pending=new Map();ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id){const p=pending.get(m.id);if(!p)return;pending.delete(m.id);m.error?p.reject(Error(JSON.stringify(m.error))):p.resolve(m.result)}};
 function cdp(method,params={}){return new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}))})}

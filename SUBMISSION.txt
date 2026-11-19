@@ -1,4 +1,4 @@
-﻿SUBMISSION WORKSHEET — BREATHE
+SUBMISSION WORKSHEET — BREATHE
 
 Challenge: Select the severe winter smog / urban air pollution assistant challenge in the platform list.
 
@@ -10,14 +10,14 @@ Then, from this project's folder after reviewing its public contents:
 Use the actual returned public https://github.com/... URL. Do not use a private Sites source-repository URL. This folder contains no resume documents; it is isolated from the parent workspace.
 
 Project Deployed Link:
-https://breathe-well-daily.accenture-gt-3643.chatgpt.site
-VERIFIED DEPLOYED, CURRENTLY PRIVATE. Public access awaits explicit owner approval; this private link is not ready for evaluator submission.
+https://breathe-smog-companion.vercel.app
+VERIFIED VERCEL DEPLOYMENT, CURRENTLY AUTHENTICATED ACCESS ONLY. Public access awaits explicit approval; this protected link is not ready for evaluator submission. Hosted frontend assets and the real Open-Meteo/CAMS endpoint have been checked.
 
 Project Demo Video Submission:
 PENDING. Record the walkthrough in DEMO_SCRIPT.txt, upload to unlisted YouTube or an appropriately shared Drive file, and paste its actual https URL. Do not substitute a screenshot, fabricated URL or repository link.
 
 Describe the changes/updates made in the deployed version (under 1024 characters):
-Built Breathe, a responsive smog companion with live Open-Meteo/CAMS outdoor estimates, modeled U.S. AQI with timestamps and stale-data handling, household personalization, daily low-emission routines, indoor-air guidance, community pledges, and a transparent CO2 scenario calculator. Added a server-side OpenAI integration with explicit guided fallback, deterministic critical-safety responses, constrained inputs and secret protection. Added a research-backed 30-case golden dataset, 49 passing automated checks, and 12 desktop/mobile browser checks. Unavailable data is never presented as a live example reading.
+Built Breathe, a responsive smog companion with live Open-Meteo/CAMS outdoor estimates, modeled U.S. AQI with timestamps and stale-data handling, household personalization, daily low-emission routines, indoor-air guidance, community pledges, and a transparent CO2 scenario calculator. Added a server-side OpenAI integration with explicit guided fallback, deterministic critical-safety responses, constrained inputs and secret protection. Added a research-backed 30-case golden dataset, 52 passing automated checks, and 12 desktop/mobile browser checks. Unavailable data is never presented as a live example reading.
 
 Mention the Gen AI services utilized and where (under 1024 characters):
 IMPLEMENTATION STATUS: OpenAI Responses API is implemented server-side for contextual clean-air chat, using household preferences, recent conversation and server-fetched modeled AQI. Deterministic safeguards handle critical hazards. The current deployment uses curated guided mode until OPENAI_API_KEY is configured; do not claim runtime GenAI utilization yet. After configuration and live evaluation, update this field with the actual model and verified usage. Guided rules and Open-Meteo data are not GenAI services.
@@ -33,4 +33,3 @@ FINAL READINESS GATES
 - Demo video is accessible through unlisted YouTube or shared Drive.
 - LinkedIn post is published and its actual post URL is available.
 - Keep submission attempts within the platform's three-attempt limit.
-

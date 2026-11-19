@@ -1,0 +1,10 @@
+.git
+.sites-runtime
+.env
+.env.*
+!.env.example
+.dev.vars
+node_modules
+public
+*.zip
+*.tar.gz

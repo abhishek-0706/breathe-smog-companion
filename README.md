@@ -1,4 +1,4 @@
-﻿# Breathe — a little care, cleaner air
+# Breathe — a little care, cleaner air
 
 A clean-air companion for families and communities navigating winter smog and urban pollution. Built with plain JavaScript, accessible HTML/CSS and a dependency-free Cloudflare Worker.
 
@@ -9,7 +9,7 @@ A clean-air companion for families and communities navigating winter smog and ur
 - Daily low-emission routines, indoor-air guidance, explainable action impacts, local daily checklist and community pledges.
 - Interactive avoided-driving CO2 scenario calculator with explicit EPA assumptions.
 - Server-side OpenAI Responses API integration with bounded context, policy instructions, deterministic emergency safeguards and honest guided-mode fallback.
-- 30 source-grounded golden scenarios; 49 automated tests; desktop/mobile browser checks.
+- 30 source-grounded golden scenarios; 52 automated tests; desktop/mobile browser checks.
 
 ## Run locally
 
@@ -50,7 +50,7 @@ The CO2 calculator estimates tailpipe emissions avoided when gasoline driving is
 
 ## Evaluation
 
-`npm test` currently passes 49 tests: 34 golden-set/schema/boundary/regression checks and 15 API/security/core tests. Selected assertions cover all 30 scenarios, including 15 marked critical. These are lexical and behavioral checks of guided responses; they do not establish clinical safety, complete semantic coverage or GenAI accuracy. The OpenAI HTTP contract is mocked in automated tests.
+`npm test` currently passes 52 tests: 34 golden-set/schema/boundary/regression checks, 15 API/security/core tests and 3 Vercel adapter checks. Selected assertions cover all 30 scenarios, including 15 marked critical. These are lexical and behavioral checks of guided responses; they do not establish clinical safety, complete semantic coverage or GenAI accuracy. The OpenAI HTTP contract is mocked in automated tests.
 
 Desktop and mobile checks cover 12 flows including dialog fit, no horizontal overflow, profile persistence, checklist, community pledge, calculator and emergency response. Optional `node scripts/browser-qa.mjs` requires a dedicated, already-running local Chromium debugging instance on loopback port 9222 and the app on 4173; it modifies that test profile's local preferences and closes the test browser. Never point it at a personal browser profile.
 
@@ -65,3 +65,9 @@ Read [SECURITY.md](SECURITY.md). Household preferences and checklists stay in br
 ## Submission status
 
 Code, research, guided-mode tests and local real-data integration are complete. GitHub public publishing requires refreshing the invalid CLI login. Generative AI configuration and actual Codex Security scanning are pending their integrations. A public demo video and LinkedIn post need separate publishing; no placeholder URLs should be submitted.
+
+## Vercel deployment
+
+The app is deployed at https://breathe-smog-companion.vercel.app in the owner's Vercel account. All URLs currently require Vercel authentication; public challenge access awaits explicit approval. `vercel.json`, `api/index.mjs` and `scripts/build-vercel.mjs` provide a Node function adapter and static frontend. Hosted real-data responses were verified. Both `.env.local` and `.vercel/` are excluded from Git and deployment uploads.
+
+The Vercel AI Gateway eligibility probe returned HTTP 403 `customer_verification_required` because account card verification is required. No Gateway model output was generated. This version retains the direct OpenAI Responses integration and its clearly labeled guided fallback. Do not claim that Vercel Gateway or live GenAI is active.

@@ -1,4 +1,4 @@
-﻿# Security review
+# Security review
 
 Review date: 19 November 2026. Scope: source, built Worker, deterministic guided responses, mocked OpenAI contract, live air-data integration and local UI behavior.
 
@@ -17,7 +17,7 @@ Review date: 19 November 2026. Scope: source, built Worker, deterministic guided
 
 ## Verification
 
-49 automated tests pass, including CSRF, SSRF allowlisting, bounded requests, secret non-disclosure, provider errors, malicious profile fields, role filtering, no fake data, stale timestamps, mathematical units and rate-limit behavior. Twelve local browser checks pass at desktop and 390px mobile widths. Real Open-Meteo requests returned HTTP 200; provider results remain estimates rather than monitor measurements.
+52 automated tests pass, including CSRF, SSRF allowlisting, bounded requests, secret non-disclosure, provider errors, malicious profile fields, role filtering, no fake data, stale timestamps, mathematical units and rate-limit behavior. Twelve local browser checks pass at desktop and 390px mobile widths. Real Open-Meteo requests returned HTTP 200; provider results remain estimates rather than monitor measurements.
 
 The research agent's independent golden tests initially failed important cases. Guidance was corrected to address emergency wording, CO poisoning hazards, heat, respirator dizziness, missing data and unsupported causal claims. All selected automated assertions now pass.
 

@@ -1,4 +1,4 @@
-﻿import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {normalizeProfile,avoidedCarbon,category} from '../lib/guidance.mjs';
 const source=await readFile('dist/server/index.js','utf8');const worker=(await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'))).default;
 const root='https://breathe.example';let n=0;

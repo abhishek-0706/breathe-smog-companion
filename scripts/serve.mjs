@@ -1,4 +1,4 @@
-﻿import http from 'node:http';
+import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 const moduleSource=await readFile(new URL('../dist/server/index.js',import.meta.url),'utf8');
 const worker=(await import('data:text/javascript;base64,'+Buffer.from(moduleSource).toString('base64'))).default;

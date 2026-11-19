@@ -1,4 +1,4 @@
-﻿DRAFT — REVIEW BEFORE PUBLISHING
+DRAFT — REVIEW BEFORE PUBLISHING
 
 I built Breathe, a clean-air companion for families and communities navigating winter smog.
 
@@ -9,7 +9,7 @@ A few details I cared about:
 • No invented readings when a provider fails.
 • Explicit assumptions behind carbon estimates; no promises of a numerical AQI improvement.
 • A 30-scenario research-backed golden dataset, including critical safety cases.
-• 49 passing automated checks and 12 desktop/mobile browser checks.
+• 52 passing automated checks and 12 desktop/mobile browser checks.
 
 The server-side OpenAI integration is implemented; runtime generative chat is pending configuration and evaluation. The current guided mode is explicitly labeled. Update this sentence only after verifying the final GenAI deployment.
 
