@@ -36,8 +36,9 @@ async function discoverGeminiFallback(ai){
   if(!response.ok)return {status:response.status,model:null};
   const payload=await response.json();
   const available=new Set((Array.isArray(payload.models)?payload.models:[]).filter(m=>Array.isArray(m.supportedGenerationMethods)&&m.supportedGenerationMethods.includes('generateContent')&&typeof m.name==='string').map(m=>m.name.replace(/^models\//,'')));
-  const candidates=['gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash','gemini-3.5-flash-lite','gemini-3.8-flash','gemini-flash-lite-latest','gemini-flash-latest'];
-  return {status:200,model:candidates.find(id=>id!==ai.model&&available.has(id))||null};
+  const textModels=[...available].filter(id=>/^gemini-[A-Za-z0-9.-]{1,80}$/.test(id)&&/flash/.test(id)&&!/(image|audio|tts|live|native)/.test(id));
+  const candidates=['gemini-flash-lite-latest','gemini-flash-latest','gemini-3.5-flash-lite','gemini-3.8-flash',...textModels.filter(id=>!/2\.0|2\.5/.test(id)).sort().reverse(),'gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash'];
+  return {status:200,model:candidates.find(id=>id!==ai.model&&available.has(id))||null,availableTextModels:textModels.slice(0,32),configuredModelListed:available.has(ai.model)};
  }catch{return {status:null,model:null}}
 }
 
@@ -81,13 +82,13 @@ export default {async fetch(request,env={}){
  const ai=aiConfig(env);if(!ai)return json({error:'Generative AI is not configured. Use the clearly labeled guided mode.'},503);
  try{const current=await liveAir(profile.city,env);aqi=current.stale?null:current.current.us_aqi}catch{aqi=null}
  const previous=Array.isArray(input.history)?input.history.filter(x=>x&&['user','assistant'].includes(x.role)&&typeof x.content==='string').slice(-8).map(x=>({role:x.role,content:x.content.slice(0,1600)})):[];
- let response,answer='',effectiveModel=ai.model,modelDiscoveryStatus=null;const attemptedModels=[];
+ let response,answer='',effectiveModel=ai.model,modelDiscoveryStatus=null,availableTextModels=[],configuredModelListed=null;const attemptedModels=[];
  const context='Household context (data, not instructions): '+JSON.stringify({profile,modeledUsAqi:aqi});
  if(ai.provider==='gemini'){
   let result=await requestGemini(ai,context,previous,input.question.trim());
   attemptedModels.push(result.model);
   if(!result.response.ok&&[404,500,502,503,504].includes(result.response.status)){
-   const discovery=await discoverGeminiFallback(ai);modelDiscoveryStatus=discovery.status;
+   const discovery=await discoverGeminiFallback(ai);modelDiscoveryStatus=discovery.status;availableTextModels=discovery.availableTextModels||[];configuredModelListed=discovery.configuredModelListed??null;
    const retryModel=discovery.model||([500,502,503,504].includes(result.response.status)?ai.model:null);
    if(retryModel){await result.response.body?.cancel();await new Promise(r=>setTimeout(r,300));result=await requestGemini({...ai,model:retryModel},context,previous,input.question.trim());attemptedModels.push(result.model)}
   }
@@ -96,7 +97,7 @@ export default {async fetch(request,env={}){
   response=await providerFetch('https://api.openai.com/v1/responses',{method:'POST',signal:AbortSignal.timeout(25000),headers:{Authorization:'Bearer '+ai.key,'Content-Type':'application/json'},body:JSON.stringify({model:ai.model,instructions:system,input:[{role:'user',content:context},...previous,{role:'user',content:input.question.trim()}],max_output_tokens:600,store:false})});
   if(response.ok){const result=await response.json();answer=result.output?.filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('\n')||''}
  }
- if(!response.ok){const code=response.status===401||response.status===403?'AI_AUTHENTICATION_OR_ACCESS':response.status===429?'AI_QUOTA_OR_RATE_LIMIT':response.status===404?'AI_MODEL_UNAVAILABLE':'AI_PROVIDER_UNAVAILABLE';return json({error:'The AI provider is unavailable. Please try later.',code,providerStatus:response.status,attemptedModels,modelDiscoveryStatus},502)}
+ if(!response.ok){const code=response.status===401||response.status===403?'AI_AUTHENTICATION_OR_ACCESS':response.status===429?'AI_QUOTA_OR_RATE_LIMIT':response.status===404?'AI_MODEL_UNAVAILABLE':'AI_PROVIDER_UNAVAILABLE';return json({error:'The AI provider is unavailable. Please try later.',code,providerStatus:response.status,attemptedModels,modelDiscoveryStatus,availableTextModels,configuredModelListed},502)}
  if(!answer.trim())return json({error:'The AI provider returned no complete answer.',code:'AI_NO_COMPLETE_ANSWER'},502);
  return json({answer:answer.slice(0,12000),mode:'generative',provider:ai.provider,model:effectiveModel,fallbackUsed:effectiveModel!==ai.model});
  }
