@@ -64,7 +64,7 @@ Read [SECURITY.md](SECURITY.md). Household preferences and checklists stay in br
 
 ## Submission status
 
-Code, research, guided-mode tests and local real-data integration are complete. The public GitHub repository and public Vercel production deployment are published and verified. Generative AI configuration and actual Codex Security scanning are pending their integrations. A public demo video and LinkedIn post need separate publishing; no placeholder URLs should be submitted.
+Code, research, guided-mode tests and local real-data integration are complete. The public GitHub repository and public Vercel production deployment are published and verified. Generative AI configuration and real-model evaluation remain pending. GitHub CodeQL extended analysis completed successfully with zero reported findings at the recorded source commit; the Codex Security plugin has not run. A narrated guided-mode preview is prepared locally. The accepted-host video URL is pending. LinkedIn posting is skipped at the owner's request, although the supplied form shows that field as required. No placeholder URLs should be submitted.
 
 ## Vercel deployment
 

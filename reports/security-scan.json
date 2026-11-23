@@ -1,0 +1,16 @@
+{
+  "verified_on": "2026-11-23",
+  "tool": "GitHub CodeQL",
+  "version": "2.27.5",
+  "query_suite": "extended",
+  "language": "javascript-typescript",
+  "analysis_id": 2230798258,
+  "run_id": 45200739495,
+  "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45200739495",
+  "commit_sha": "872c68838b0af3066f537ba09679a55515054aba",
+  "rules_count": 103,
+  "results_count": 0,
+  "open_alerts_at_verification": 0,
+  "conclusion": "success",
+  "scope_limit": "Static analysis of the referenced commit. Not a guarantee of no vulnerabilities; not a Codex Security scan."
+}

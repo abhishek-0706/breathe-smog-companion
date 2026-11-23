@@ -1,5 +1,5 @@
 {
-  "verified_on": "2026-11-19",
+  "verified_on": "2026-11-23",
   "automated_tests": {
     "total": 52,
     "passed": 52,
@@ -41,7 +41,15 @@
     "application_security_tests": "Passed",
     "known_secret_pattern_check": "Passed",
     "codex_security_scan": "Not run; plugin connection pending",
-    "guarantee_of_no_vulnerabilities": false
+    "guarantee_of_no_vulnerabilities": false,
+    "codeql": {
+      "conclusion": "success",
+      "open_alerts": 0,
+      "rules_count": 103,
+      "version": "2.27.5",
+      "source_commit": "872c68838b0af3066f537ba09679a55515054aba",
+      "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45200739495"
+    }
   },
   "deployment": {
     "url": "https://breathe-smog-companion.vercel.app",
@@ -57,5 +65,14 @@
     "public": true,
     "url": "https://github.com/abhishek-0706/breathe-smog-companion",
     "branch": "main"
+  },
+  "submission": {
+    "ready": false,
+    "linkedin": "Skipped at user request",
+    "required_pending": [
+      "Live GenAI activation and evaluation",
+      "Accepted-host demo video URL"
+    ],
+    "form_constraint": "LinkedIn URL is shown as mandatory in supplied form; user has declined posting."
   }
 }

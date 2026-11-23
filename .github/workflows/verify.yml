@@ -1,0 +1,32 @@
+name: Submission checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Use Node 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Build deployable artifacts
+        run: node scripts/build-vercel.mjs
+      - name: Run golden dataset and security regression tests
+        run: npm test
+      - name: Check source size and known secret patterns
+        run: node scripts/check-source.mjs
+      - name: Verify runtime secrets are not tracked
+        shell: bash
+        run: |
+          if git ls-files | grep -E '(^|/)\.env($|\.)' | grep -vE '(^|/)\.env\.example$'; then
+            echo 'A real environment file is tracked.'
+            exit 1
+          fi

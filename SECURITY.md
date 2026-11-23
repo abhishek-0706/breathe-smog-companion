@@ -1,6 +1,6 @@
 # Security review
 
-Review date: 19 November 2026. Scope: source, built Worker, deterministic guided responses, mocked OpenAI contract, live air-data integration and local UI behavior.
+Review date: 23 November 2026. Scope: source, built Worker, deterministic guided responses, mocked OpenAI contract, live air-data integration and local UI behavior.
 
 ## Implemented controls
 
@@ -22,6 +22,12 @@ Review date: 19 November 2026. Scope: source, built Worker, deterministic guided
 The research agent's independent golden tests initially failed important cases. Guidance was corrected to address emergency wording, CO poisoning hazards, heat, respirator dizziness, missing data and unsupported causal claims. All selected automated assertions now pass.
 
 **This is not a Codex Security scan report.** The Codex Security plugin has been suggested but is not connected and its scanner has not run. Do not describe these tests as a completed platform security scan or proof of no vulnerabilities.
+
+## GitHub CodeQL static analysis
+
+[Extended CodeQL scan](https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45200739495) completed successfully on 23 November 2026. CodeQL 2.27.5 analyzed JavaScript/TypeScript with 103 rules, reporting zero results; the open-alert query also returned zero. The scanned source commit is recorded in [reports/security-scan.json](reports/security-scan.json). Documentation and CI additions after that commit trigger subsequent scans and are reported separately.
+
+This is an actual GitHub CodeQL scan, not a Codex Security plugin scan. Static analysis has limits and does not establish that no vulnerabilities exist. The submission-check workflow also builds the artifacts, runs all tests and checks source size and tracked-secret-file exclusions with read-only repository permissions and pinned official actions.
 
 ## Remaining limitations
 
