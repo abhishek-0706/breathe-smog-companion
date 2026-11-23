@@ -82,6 +82,12 @@ export default {async fetch(request,env={}){
  const profile=normalizeProfile(input.profile);let aqi=null;
  const identity=request.headers.get('oai-authenticated-user-id')||request.headers.get('CF-Connecting-IP')||'anonymous';if(!rateAllowed('chat:'+identity,8))return json({error:'Please wait a minute before asking more questions.'},429,{'Retry-After':'60'});
  if(/chest pain|cannot breathe|can.t breathe|struggl.*breath|severe.*breath|blue lips|faint|unusually sleepy|dizz|generator|charcoal|overheat|too hot|very hot|medication|inhaler|dose|asthma attack/i.test(input.question))return json({answer:guidedReply(input.question,profile,aqi),mode:'safety-guidance'});
+ if(/\b(asthma|copd|heart disease|lung disease|pregnan\w*)\b/i.test(input.question)){
+  let healthAqi=null;try{const air=await liveAir(profile.city,env);if(!air.stale)healthAqi=air.current.us_aqi}catch{}
+  const conditions=Number.isFinite(healthAqi)?'The latest city-area modeled US AQI is '+Math.round(healthAqi)+'. ':'Current air conditions are unavailable; check an authoritative local source before outdoor decisions. ';
+  const activity=!Number.isFinite(healthAqi)||healthAqi>100?'Reduce prolonged or strenuous outdoor activity and choose a cleaner indoor alternative. ':'Adapt activity to individual symptoms, local advisories and your clinician-provided plan. ';
+  return json({answer:conditions+'Children and people with asthma or heart/lung conditions can be more sensitive to pollution. '+activity+'Follow the established asthma action plan or other clinician-provided care plan. Do not change medication doses based on this app. If symptoms worsen, seek medical advice; severe breathing difficulty, chest pain, blue lips or fainting need emergency medical help. Source: https://www.airnow.gov/publications/air-quality-index/air-quality-guide-for-particle-pollution/',mode:'safety-guidance',basis:'curated-public-health'});
+ }
  const ai=aiConfig(env);if(!ai)return json({error:'Generative AI is not configured. Use the clearly labeled guided mode.'},503);
  try{const current=await liveAir(profile.city,env);aqi=current.stale?null:current.current.us_aqi}catch{aqi=null}
  const previous=Array.isArray(input.history)?input.history.filter(x=>x&&['user','assistant'].includes(x.role)&&typeof x.content==='string').slice(-8).map(x=>({role:x.role,content:x.content.slice(0,1600)})):[];
