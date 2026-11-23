@@ -1,17 +1,17 @@
 {
-  "verified_on": "2026-11-23",
+  "verified_on": "2026-11-24",
   "ready_to_submit": false,
   "fields": {
     "Challenge": "Challenge 6 - Severe winter smog and urban air pollution assistant",
     "Public GitHub Repository Link": "https://github.com/abhishek-0706/breathe-smog-companion",
     "Project Deployed Link": "https://breathe-smog-companion.vercel.app",
     "Project Demo Video Submission": null,
-    "Describe the changes/updates made in the deployed version": "Built Breathe with live Open-Meteo/CAMS modeled outdoor air quality, source timestamps, stale-data handling, household personalization, low-emission daily routines, indoor-air guidance, community pledges and a transparent CO2 scenario calculator. Integrated server-side Google Gemini with secret protection, critical-safety responses, bounded retries and clearly labeled fallback. Added a sourced 30-case golden dataset, 63 passing automated tests, pinned GitHub CI and CodeQL analysis. Current provider HTTP 503 errors are recorded honestly; final live-model validation remains blocked.",
-    "Mention the Gen AI services utilized in the submission, and where did you utilize it?": "Google Gemini API is integrated server-side for contextual clean-air chat using normalized household preferences, bounded conversation context and server-fetched air estimates. Production selects Gemini 4 Hydrogen via stateless Interactions requests; the key is stored as a Vercel Secret. An initial Gemini Flash-Lite smoke test generated a real answer; subsequent requests returned HTTP 503, so final live-model validation has not passed. Curated fallback is explicitly labeled. Open-Meteo/CAMS supplies real modeled air data and is not a GenAI service.",
+    "Describe the changes/updates made in the deployed version": "Built Breathe with real Open-Meteo/CAMS modeled outdoor air quality, timestamps, stale-data handling, household personalization, low-emission routines, indoor-air guidance, community pledges and a transparent CO2 calculator. Added server-side Gemini, secret protection, model failover, sourced safety responses and labeled fallback. Includes a sourced 30-case golden dataset, 74 passing automated tests, GitHub CI and CodeQL. All 13 selected live requests succeeded: 11 generated answers and 2 curated safety responses. Semantic review found 6 complete and 7 partial answers; this is not full accuracy certification.",
+    "Mention the Gen AI services utilized in the submission, and where did you utilize it?": "Google Gemini API powers contextual clean-air chat using normalized household preferences, bounded conversation context and server-fetched modeled air data. Production primary model is gemini-3.1-flash-lite, with verified supported-model failover. The key stays in a Vercel Production secret. Medical-condition and other critical safety intents use explicitly labeled sourced guidance. All 13 selected live requests returned HTTP 200, including 11 actual Gemini generations; some answers omitted expected details. Open-Meteo/CAMS supplies real modeled air data and is not GenAI.",
     "LinkedIn Post": null
   },
   "pending": [
-    "Stable successful GenAI evaluation",
+    "Resolve incomplete answer coverage in live semantic review",
     "Accepted-host final demo video URL"
   ],
   "linkedin": "Skipped at explicit user request; the supplied form marks this as required."

@@ -32,7 +32,7 @@ This is an actual GitHub CodeQL scan, not a Codex Security plugin scan. Static a
 ## Remaining limitations
 
 - In-memory throttling is best effort per Worker isolate; it is not a global budget or durable distributed rate limiter. Before enabling a paid model on a public high-traffic site, add a platform-enforced distributed quota and set provider spending controls.
-- Prompt injection is constrained by server-owned instructions and deterministic hazard routes, but cannot be proven eliminated. Generated answers have not been semantically evaluated against the golden set with real credentials.
+- Prompt injection is constrained by server-owned instructions and deterministic hazard routes, but cannot be proven eliminated. Thirteen selected live answers have been semantically reviewed: six pass and seven partial; this is not full golden-set acceptance.
 - API fixtures test integration contracts, not provider reliability or model quality. Clinical and accessibility certification are out of scope; keyboard/dialog semantics and responsive behavior have been checked.
 - Hosted authentication, transport security and edge access policy are platform responsibilities. UI browser storage is device-scoped, not encrypted personal health storage.
 - Operational dependency: provider availability, current terms and correct runtime secret configuration. No security guarantees are implied by passing tests.
@@ -40,3 +40,5 @@ This is an actual GitHub CodeQL scan, not a Codex Security plugin scan. Static a
 Do not put real vulnerability details or secrets in public issues. Reproduce issues locally using synthetic data and share privately with the project owner.
 
 Gemini-specific checks verify header-only secret transport, a fixed upstream host, bounded role-filtered history, exclusion of thought parts, rejection of truncated or blocked responses, safe provider error classification and the exact mixed-case Vercel secret alias.
+
+Latest recheck (24 November 2026): source commit 8246e98df0e81243d8ae2d3ae0f5431c74eb6396 passed CodeQL and CI. Open alerts: zero. Three intentional flows in the manual evaluator were reviewed and dismissed as used in tests: public synthetic data sent to the fixed project endpoint, and model-response JSON saved to a fixed report path. This is not zero raw findings. No Codex Security scan was run.

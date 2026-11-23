@@ -1,12 +1,12 @@
 {
-  "verified_on": "2026-11-23",
+  "verified_on": "2026-11-24",
   "automated_tests": {
-    "total": 63,
-    "passed": 63,
+    "total": 74,
+    "passed": 74,
     "failed": 0,
     "command": "npm test",
-    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45204918529",
-    "ci_source_commit": "a4ef1bb3d4ab6db5f81a5564130b99b4c8ab3623"
+    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45249478815",
+    "ci_source_commit": "8246e98df0e81243d8ae2d3ae0f5431c74eb6396"
   },
   "golden_dataset": {
     "cases": 30,
@@ -33,24 +33,19 @@
   "genai": {
     "provider": "Google Gemini",
     "configured": true,
-    "live_model_evaluation": false,
-    "current_mode": "Gemini configured; provider requests currently return HTTP 503 and UI labels curated fallback",
-    "contract_tests": "Mocked, passed",
-    "vercel_gateway_probe": {
-      "http_status": 403,
-      "reason": "customer_verification_required",
-      "generated_response": false
+    "model": "gemini-3.1-flash-lite",
+    "live_model_evaluation": true,
+    "http_success": 13,
+    "generated_answers": 11,
+    "curated_safety_answers": 2,
+    "semantic_review": {
+      "pass": 6,
+      "partial": 7,
+      "fail": 0,
+      "full_acceptance": false,
+      "report": "reports/live-semantic-review.json"
     },
-    "model": "gemini-4-hydrogen",
-    "initial_smoke": "An earlier gemini-3.5-flash-lite request returned HTTP 200 and a real generated answer; subsequent requests failed.",
-    "availability": "Blocked by repeated provider HTTP 503 across tested models",
-    "latest_observed_http": {
-      "app_status": 502,
-      "upstream_status": 503,
-      "model": "gemini-4-hydrogen",
-      "code": "AI_PROVIDER_UNAVAILABLE",
-      "validated_success": false
-    }
+    "availability": "Successful selected live run; earlier capacity failures recorded separately. Future uptime not guaranteed."
   },
   "security": {
     "application_security_tests": "Passed",
@@ -62,9 +57,10 @@
       "open_alerts": 0,
       "rules_count": 103,
       "version": "2.27.5",
-      "source_commit": "a4ef1bb3d4ab6db5f81a5564130b99b4c8ab3623",
-      "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45204916345",
-      "actions_rules_count": 23
+      "source_commit": "8246e98df0e81243d8ae2d3ae0f5431c74eb6396",
+      "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45249479519",
+      "actions_rules_count": 23,
+      "reviewed_test_alerts": 3
     }
   },
   "deployment": {
@@ -86,7 +82,7 @@
     "ready": false,
     "linkedin": "Skipped at user request",
     "required_pending": [
-      "Stable live-model validation",
+      "Resolve incomplete answer coverage in live semantic review",
       "Accepted-host final demo video URL"
     ],
     "form_constraint": "LinkedIn URL is shown as mandatory in supplied form; user has declined posting.",
@@ -95,9 +91,8 @@
   "latest_live_recheck": {
     "report": "reports/live-genai-evaluation.json",
     "flags": "reports/submission-flags.json",
-    "ai_passed": false,
-    "provider_http_status": 503,
-    "safeguards_report": "reports/live-safeguard-recheck.json"
+    "ai_passed": true,
+    "semantic_acceptance": false
   },
   "drive_upload": {
     "uploaded": false,

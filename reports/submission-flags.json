@@ -1,14 +1,11 @@
 {
-  "checked_at": "2026-11-23T15:46:06.191985+00:00",
   "ready_to_submit": false,
-  "live_genai_passed": false,
+  "live_genai_passed": true,
   "flags": [
     {
-      "id": "GEMINI_UPSTREAM_UNAVAILABLE",
-      "severity": "blocking",
-      "app_http": 502,
-      "provider_http": 503,
-      "evidence": "reports/live-genai-evaluation.json"
+      "id": "SEMANTIC_COVERAGE_PARTIAL",
+      "severity": "quality_gap",
+      "detail": "13 live requests succeeded: 11 generated and 2 curated. Independent review: 6 pass, 7 partial, 0 fail. Some expected advice omitted."
     },
     {
       "id": "DEMO_HOST_URL_MISSING",
@@ -40,9 +37,10 @@
     }
   ],
   "prior_automated_verification": {
-    "tests_passed": 63,
-    "ci_run": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45204918529",
+    "tests_passed": 74,
+    "ci_run": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45249478815",
     "codeql_report": "reports/security-scan.json"
   },
-  "model": "gemini-4-hydrogen"
+  "model": "gemini-3.1-flash-lite",
+  "checked_on": "2026-11-24"
 }
