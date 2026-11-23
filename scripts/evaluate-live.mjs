@@ -8,7 +8,7 @@ await mkdir('reports',{recursive:true});
 for(const id of selected){
  const c=dataset.cases.find(c=>c.id===id);const profile={city:'New Delhi',sensitive:c.input.sensitive===true,purifier:c.input.purifier===true,distance:c.input.avoided_car_km??12,budget:'No-cost first',commute:'Car'};
  const started=Date.now();let record;
- try{const response=await fetch(origin+'/api/chat',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({question:c.input.question,profile}),signal:AbortSignal.timeout(45000)});const answer=await response.json();record={id,critical:c.critical,question:c.input.question,expected:c.expected,forbidden:c.forbidden,sources:c.sources,http_status:response.status,...answer,elapsed_ms:Date.now()-started}}
+ try{const response=await fetch(origin+'/api/chat',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({question:c.input.question,profile}),signal:AbortSignal.timeout(65000)});const answer=await response.json();record={id,critical:c.critical,question:c.input.question,expected:c.expected,forbidden:c.forbidden,sources:c.sources,http_status:response.status,...answer,elapsed_ms:Date.now()-started}}
  catch(e){record={id,question:c.input.question,http_status:null,error:e.name,elapsed_ms:Date.now()-started}}
  report.cases.push(record);await writeFile('reports/live-genai-evaluation.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({id,status:record.http_status,mode:record.mode,provider:record.provider,error:record.code||record.error}));
  if(record.http_status!==200){console.log('Stopping after failed live request; results are not passing.');break}

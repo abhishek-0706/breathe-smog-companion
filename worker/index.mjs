@@ -37,7 +37,7 @@ async function discoverGeminiFallback(ai){
   const payload=await response.json();
   const available=new Set((Array.isArray(payload.models)?payload.models:[]).filter(m=>Array.isArray(m.supportedGenerationMethods)&&m.supportedGenerationMethods.includes('generateContent')&&typeof m.name==='string').map(m=>m.name.replace(/^models\//,'')));
   const textModels=[...available].filter(id=>/^gemini-[A-Za-z0-9.-]{1,80}$/.test(id)&&/flash/.test(id)&&!/(image|audio|tts|live|native)/.test(id));
-  const candidates=['gemini-flash-lite-latest','gemini-flash-latest','gemini-3.5-flash-lite','gemini-3.8-flash',...textModels.filter(id=>!/2\.0|2\.5/.test(id)).sort().reverse(),'gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash'];
+  const candidates=['gemini-flash-lite-latest','gemini-3.1-flash-lite','gemini-3.1-flash-lite-preview','gemini-flash-latest','gemini-3.5-flash-lite','gemini-3.8-flash',...textModels.filter(id=>!/2\.0|2\.5/.test(id)).sort().reverse(),'gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash'];
   return {status:200,model:candidates.find(id=>id!==ai.model&&available.has(id))||null,availableTextModels:textModels.slice(0,32),configuredModelListed:available.has(ai.model)};
  }catch{return {status:null,model:null}}
 }
@@ -90,7 +90,7 @@ export default {async fetch(request,env={}){
   if(!result.response.ok&&[404,500,502,503,504].includes(result.response.status)){
    const discovery=await discoverGeminiFallback(ai);modelDiscoveryStatus=discovery.status;availableTextModels=discovery.availableTextModels||[];configuredModelListed=discovery.configuredModelListed??null;
    const retryModel=discovery.model||([500,502,503,504].includes(result.response.status)?ai.model:null);
-   if(retryModel){await result.response.body?.cancel();await new Promise(r=>setTimeout(r,300));result=await requestGemini({...ai,model:retryModel},context,previous,input.question.trim());attemptedModels.push(result.model)}
+   if(retryModel){await result.response.body?.cancel();await new Promise(r=>setTimeout(r,300));result=await requestGemini({...ai,model:retryModel},context,previous,input.question.trim());attemptedModels.push(result.model);if(discovery.model&&[500,502,503,504].includes(result.response.status)){await result.response.body?.cancel();await new Promise(r=>setTimeout(r,1200));result=await requestGemini({...ai,model:retryModel},context,previous,input.question.trim());attemptedModels.push(result.model)}}
   }
   response=result.response;answer=result.answer;effectiveModel=result.model;modelVersion=result.modelVersion;
  }else{
