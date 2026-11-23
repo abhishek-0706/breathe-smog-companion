@@ -1,10 +1,10 @@
 {
   "verified_on": "2026-11-23",
   "automated_tests": {
-    "total": 52,
-    "passed": 52,
+    "total": 59,
+    "passed": 59,
     "failed": 0,
-    "command": "node --test --test-isolation=none tests/golden.test.mjs tests/security.test.mjs tests/vercel.test.mjs"
+    "command": "npm test"
   },
   "golden_dataset": {
     "cases": 30,
@@ -26,16 +26,17 @@
     "fake_fallback": false
   },
   "genai": {
-    "provider": "OpenAI Responses API",
+    "provider": "Google Gemini API (optional OpenAI supported)",
     "configured": false,
     "live_model_evaluation": false,
-    "current_mode": "Clearly labeled curated guided responses",
+    "current_mode": "Gemini support implemented; production activation verification pending",
     "contract_tests": "Mocked, passed",
     "vercel_gateway_probe": {
       "http_status": 403,
       "reason": "customer_verification_required",
       "generated_response": false
-    }
+    },
+    "model": "gemini-3.5-flash-lite"
   },
   "security": {
     "application_security_tests": "Passed",

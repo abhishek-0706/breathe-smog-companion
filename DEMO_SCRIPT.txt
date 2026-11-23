@@ -8,4 +8,4 @@ BREATHE — TWO-MINUTE WALKTHROUGH
 1:30–1:45: Show a community pledge and download the neighbourhood note.
 1:45–2:00: Ask the companion a relevant question. State whether it is verified generative mode or curated guided mode. Show an emergency question routes to urgent help. Mention the 30 researched golden cases and test report without claiming clinical certification or a completed Codex Security scan.
 
-Before recording a final GenAI challenge demonstration, enable the actual OpenAI service and evaluate real generated answers. Record only synthetic household context; hide tokens and personal browser information. Upload to the submission's accepted video service with appropriate public/unlisted permissions.
+Before recording a final GenAI challenge demonstration, enable the actual Gemini service and evaluate real generated answers. Record only synthetic household context; hide tokens and personal browser information. Upload to the submission's accepted video service with appropriate public/unlisted permissions.

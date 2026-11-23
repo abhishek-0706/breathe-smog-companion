@@ -1,23 +1,23 @@
 # Security review
 
-Review date: 23 November 2026. Scope: source, built Worker, deterministic guided responses, mocked OpenAI contract, live air-data integration and local UI behavior.
+Review date: 23 November 2026. Scope: source, built Worker, deterministic guided responses, mocked Gemini and OpenAI contracts, live air-data integration and local UI behavior.
 
 ## Implemented controls
 
 - No third-party runtime dependencies; no remotely loaded JavaScript.
 - Strict same-origin chat POST, JSON-only content type, 16 KB streaming request limit, 1,500-character question limit, constrained profiles and bounded history.
 - Fixed upstream hosts and city-coordinate allowlist; user input cannot select an arbitrary fetch URL. Protects against a generic SSRF proxy.
-- OpenAI key lives only in server environment; no credentials in client code, source, URLs, storage or error messages.
+- AI provider keys live only in server environment; no credentials in client code, source, URLs, storage or error messages.
 - Model responses and chat questions render through `textContent`, not HTML. All dynamic provider strings in templates are escaped. Static SVG markup is developer-owned.
 - CSP restricts scripts and connections to same origin; no eval, plugins, inline script or arbitrary form targets. Inline styles are permitted for charts. `nosniff`, referrer and permission policies are set.
 - Invalid, stale and unavailable data never becomes a fabricated favorable reading. Provider responses validate numeric values and timestamps.
 - Safety-critical emergency, medication, generator and heat intents use deterministic advice before model invocation. Model policy adds evidence and uncertainty constraints.
 - Server fetches air data itself for generated answers; a browser-supplied AQI is ignored.
-- No server-side household database, application request-body logs, analytics or file uploads. AI calls use `store:false`; provider policies still apply.
+- No server-side household database, application request-body logs, analytics or file uploads. OpenAI calls use `store:false`; Gemini uses its provider policies, without a misleading storage guarantee.
 
 ## Verification
 
-52 automated tests pass, including CSRF, SSRF allowlisting, bounded requests, secret non-disclosure, provider errors, malicious profile fields, role filtering, no fake data, stale timestamps, mathematical units and rate-limit behavior. Twelve local browser checks pass at desktop and 390px mobile widths. Real Open-Meteo requests returned HTTP 200; provider results remain estimates rather than monitor measurements.
+59 automated tests pass, including CSRF, SSRF allowlisting, bounded requests, secret non-disclosure, provider errors, malicious profile fields, role filtering, no fake data, stale timestamps, mathematical units and rate-limit behavior. Twelve local browser checks pass at desktop and 390px mobile widths. Real Open-Meteo requests returned HTTP 200; provider results remain estimates rather than monitor measurements.
 
 The research agent's independent golden tests initially failed important cases. Guidance was corrected to address emergency wording, CO poisoning hazards, heat, respirator dizziness, missing data and unsupported causal claims. All selected automated assertions now pass.
 
@@ -38,3 +38,5 @@ This is an actual GitHub CodeQL scan, not a Codex Security plugin scan. Static a
 - Operational dependency: provider availability, current terms and correct runtime secret configuration. No security guarantees are implied by passing tests.
 
 Do not put real vulnerability details or secrets in public issues. Reproduce issues locally using synthetic data and share privately with the project owner.
+
+Gemini-specific checks verify header-only secret transport, a fixed upstream host, bounded role-filtered history, exclusion of thought parts, rejection of truncated or blocked responses, safe provider error classification and the exact mixed-case Vercel secret alias.

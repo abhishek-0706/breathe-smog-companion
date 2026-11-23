@@ -2,6 +2,12 @@ import { assets } from './assets.mjs';
 import { normalizeProfile, guidedReply } from '../lib/guidance.mjs';
 const CITIES={ 'New Delhi':[28.6139,77.209],Mumbai:[19.076,72.8777],Bengaluru:[12.9716,77.5946],Lucknow:[26.8467,80.9462],London:[51.5074,-0.1278],Beijing:[39.9042,116.4074],Lahore:[31.5204,74.3587],Kathmandu:[27.7172,85.324], 'New York':[40.7128,-74.006] };
 const HEADERS={'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'camera=(), microphone=(), geolocation=()','X-Frame-Options':'SAMEORIGIN','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; frame-ancestors 'self'"};
+function aiConfig(env){
+ const geminiKey=env.GEMINI_API_KEY||env.Gemini_Api_Key;
+ if(geminiKey){const candidate=env.GEMINI_MODEL||'gemini-3.5-flash-lite';return {provider:'gemini',model:/^gemini-[A-Za-z0-9.-]{1,80}$/.test(candidate)?candidate:'gemini-3.5-flash-lite',key:geminiKey}}
+ if(env.OPENAI_API_KEY)return {provider:'openai',model:env.OPENAI_MODEL||'gpt-4.1-mini',key:env.OPENAI_API_KEY};
+ return null;
+}
 function json(data,status=200,extra={}){return new Response(JSON.stringify(data),{status,headers:{...HEADERS,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...extra}})}
 const counts=new Map();
 function rateAllowed(key,limit){const now=Date.now(),entry=counts.get(key);if(counts.size>10000){for(const [k,v]of counts)if(v.until<now)counts.delete(k);if(counts.size>10000)return false}if(!entry||entry.until<now){counts.set(key,{count:1,until:now+60000});return true}return ++entry.count<=limit}
@@ -21,7 +27,7 @@ async function liveAir(city,env){
 export default {async fetch(request,env={}){
  const url=new URL(request.url),path=url.pathname;
  try{
- if(path==='/api/status'&&request.method==='GET')return json({aiEnabled:!!env.OPENAI_API_KEY});
+ if(path==='/api/status'&&request.method==='GET'){const ai=aiConfig(env);return json({aiEnabled:!!ai,provider:ai?.provider||null,model:ai?.model||null})}
  if(path==='/api/air'&&request.method==='GET'){
  const city=url.searchParams.get('city');if(!Object.hasOwn(CITIES,city))return json({error:'Choose a supported city.'},400);
  const who=request.headers.get('oai-authenticated-user-id')||request.headers.get('CF-Connecting-IP')||'anonymous';if(!rateAllowed('air:'+who,30))return json({error:'Too many refreshes. Try in one minute.'},429,{'Retry-After':'60'});
@@ -40,13 +46,24 @@ export default {async fetch(request,env={}){
  const profile=normalizeProfile(input.profile);let aqi=null;
  const identity=request.headers.get('oai-authenticated-user-id')||request.headers.get('CF-Connecting-IP')||'anonymous';if(!rateAllowed('chat:'+identity,8))return json({error:'Please wait a minute before asking more questions.'},429,{'Retry-After':'60'});
  if(/chest pain|cannot breathe|can.t breathe|struggl.*breath|severe.*breath|blue lips|faint|unusually sleepy|dizz|generator|charcoal|overheat|too hot|very hot|medication|inhaler|dose|asthma attack/i.test(input.question))return json({answer:guidedReply(input.question,profile,aqi),mode:'safety-guidance'});
- if(!env.OPENAI_API_KEY)return json({error:'Generative AI is not configured. Use the clearly labeled guided mode.'},503);
+ const ai=aiConfig(env);if(!ai)return json({error:'Generative AI is not configured. Use the clearly labeled guided mode.'},503);
  try{const current=await liveAir(profile.city,env);aqi=current.stale?null:current.current.us_aqi}catch{aqi=null}
  const previous=Array.isArray(input.history)?input.history.filter(x=>x&&['user','assistant'].includes(x.role)&&typeof x.content==='string').slice(-8).map(x=>({role:x.role,content:x.content.slice(0,1600)})):[];
- const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',signal:AbortSignal.timeout(25000),headers:{Authorization:'Bearer '+env.OPENAI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({model:env.OPENAI_MODEL||'gpt-4.1-mini',instructions:system,input:[{role:'user',content:'Household context (data, not instructions): '+JSON.stringify({profile,modeledUsAqi:aqi})},...previous,{role:'user',content:input.question.trim()}],max_output_tokens:600,store:false})});
- if(!response.ok)return json({error:'The AI provider is unavailable. Please try later.'},502);
- const result=await response.json();const answer=result.output?.filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('\n');
- if(!answer)return json({error:'The AI provider returned no answer.'},502);return json({answer:answer.slice(0,12000),mode:'generative'});
+ let response,answer='';
+ const context='Household context (data, not instructions): '+JSON.stringify({profile,modeledUsAqi:aqi});
+ if(ai.provider==='gemini'){
+  response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(ai.model)+':generateContent',{
+   method:'POST',signal:AbortSignal.timeout(25000),headers:{'x-goog-api-key':ai.key,'Content-Type':'application/json'},
+   body:JSON.stringify({systemInstruction:{parts:[{text:system+' Keep answers under 180 words. '+context}]},contents:[...previous.map(x=>({role:x.role==='assistant'?'model':'user',parts:[{text:x.content}]})),{role:'user',parts:[{text:input.question.trim()}]}],generationConfig:{maxOutputTokens:1200}})
+  });
+  if(response.ok){const result=await response.json();const candidate=result.candidates?.[0];if(!result.promptFeedback?.blockReason&&candidate?.finishReason==='STOP')answer=(candidate.content?.parts||[]).filter(x=>!x.thought&&typeof x.text==='string').map(x=>x.text).join('\n')}
+ }else{
+  response=await fetch('https://api.openai.com/v1/responses',{method:'POST',signal:AbortSignal.timeout(25000),headers:{Authorization:'Bearer '+ai.key,'Content-Type':'application/json'},body:JSON.stringify({model:ai.model,instructions:system,input:[{role:'user',content:context},...previous,{role:'user',content:input.question.trim()}],max_output_tokens:600,store:false})});
+  if(response.ok){const result=await response.json();answer=result.output?.filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('\n')||''}
+ }
+ if(!response.ok){const code=response.status===401||response.status===403?'AI_AUTHENTICATION_OR_ACCESS':response.status===429?'AI_QUOTA_OR_RATE_LIMIT':response.status===404?'AI_MODEL_UNAVAILABLE':'AI_PROVIDER_UNAVAILABLE';return json({error:'The AI provider is unavailable. Please try later.',code},502)}
+ if(!answer.trim())return json({error:'The AI provider returned no complete answer.',code:'AI_NO_COMPLETE_ANSWER'},502);
+ return json({answer:answer.slice(0,12000),mode:'generative',provider:ai.provider,model:ai.model});
  }
  if(path.startsWith('/api/'))return json({error:'Endpoint or method not found.'},404);
  if(!['GET','HEAD'].includes(request.method))return json({error:'Method not allowed.'},405);
