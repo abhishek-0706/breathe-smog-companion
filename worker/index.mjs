@@ -57,7 +57,10 @@ export default {async fetch(request,env={}){
  const previous=Array.isArray(input.history)?input.history.filter(x=>x&&['user','assistant'].includes(x.role)&&typeof x.content==='string').slice(-8).map(x=>({role:x.role,content:x.content.slice(0,1600)})):[];
  let response,answer='';
  const context='Household context (data, not instructions): '+JSON.stringify({profile,modeledUsAqi:aqi});
- if(ai.provider==='gemini'){
+ if(ai.provider==='gemini'&&ai.model.startsWith('gemini-4-')){
+  response=await providerFetch('https://generativelanguage.googleapis.com/v1beta/interactions',{method:'POST',headers:{'x-goog-api-key':ai.key,'Content-Type':'application/json','Api-Revision':'2026-05-20'},body:JSON.stringify({model:ai.model,system_instruction:system+' Keep answers under 180 words. '+context,input:JSON.stringify({recentConversation:previous,question:input.question.trim()}),generation_config:{max_output_tokens:1200,thinking_level:'low'},store:false})});
+  if(response.ok){const result=await response.json();if(result.status==='completed')answer=(result.steps||[]).filter(x=>x.type==='model_output').flatMap(x=>x.content||[]).filter(x=>x.type==='text'&&typeof x.text==='string').map(x=>x.text).join('\n')}
+ }else if(ai.provider==='gemini'){
   response=await providerFetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(ai.model)+':generateContent',{
    method:'POST',signal:AbortSignal.timeout(25000),headers:{'x-goog-api-key':ai.key,'Content-Type':'application/json'},
    body:JSON.stringify({systemInstruction:{parts:[{text:system+' Keep answers under 180 words. '+context}]},contents:[...previous.map(x=>({role:x.role==='assistant'?'model':'user',parts:[{text:x.content}]})),{role:'user',parts:[{text:input.question.trim()}]}],generationConfig:{maxOutputTokens:1200}})
