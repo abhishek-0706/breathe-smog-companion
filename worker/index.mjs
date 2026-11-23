@@ -17,6 +17,7 @@ async function providerFetch(url,options,maxAttempts=2){
 }
 async function requestGemini(ai,context,previous,question){
  let response,answer='',modelVersion=null;
+ try{
  if(ai.model.startsWith('gemini-4-')){
   response=await providerFetch('https://generativelanguage.googleapis.com/v1beta/interactions',{method:'POST',headers:{'x-goog-api-key':ai.key,'Content-Type':'application/json','Api-Revision':'2026-05-20'},body:JSON.stringify({model:ai.model,system_instruction:system+' Keep answers under 180 words. '+context,input:JSON.stringify({recentConversation:previous,question:question}),generation_config:{max_output_tokens:1200,thinking_level:'low'},store:false})},1);
   if(response.ok){const result=await response.json();if(result.status==='completed')answer=(result.steps||[]).filter(x=>x.type==='model_output').flatMap(x=>x.content||[]).filter(x=>x.type==='text'&&typeof x.text==='string').map(x=>x.text).join('\n')}
@@ -29,6 +30,7 @@ async function requestGemini(ai,context,previous,question){
 
  }
  return {response,answer,model:ai.model,modelVersion};
+ }catch(error){return {response:null,answer:'',model:ai.model,modelVersion:null,failure:['TimeoutError','AbortError'].includes(error.name)||error.cause?.code==='UND_ERR_CONNECT_TIMEOUT'?'timeout':'connection'}}
 }
 async function discoverGeminiFallback(ai){
  try{
@@ -82,21 +84,22 @@ export default {async fetch(request,env={}){
  const ai=aiConfig(env);if(!ai)return json({error:'Generative AI is not configured. Use the clearly labeled guided mode.'},503);
  try{const current=await liveAir(profile.city,env);aqi=current.stale?null:current.current.us_aqi}catch{aqi=null}
  const previous=Array.isArray(input.history)?input.history.filter(x=>x&&['user','assistant'].includes(x.role)&&typeof x.content==='string').slice(-8).map(x=>({role:x.role,content:x.content.slice(0,1600)})):[];
- let response,answer='',effectiveModel=ai.model,modelVersion=null,modelDiscoveryStatus=null,availableTextModels=[],configuredModelListed=null;const attemptedModels=[];
+ let response,answer='',effectiveModel=ai.model,modelVersion=null,providerFailure=null,modelDiscoveryStatus=null,availableTextModels=[],configuredModelListed=null;const attemptedModels=[];
  const context='Household context (data, not instructions): '+JSON.stringify({profile,modeledUsAqi:aqi});
  if(ai.provider==='gemini'){
   let result=await requestGemini(ai,context,previous,input.question.trim());
   attemptedModels.push(result.model);
-  if(!result.response.ok&&[404,500,502,503,504].includes(result.response.status)){
+  if(!result.response||(!result.response.ok&&[404,500,502,503,504].includes(result.response.status))){
    const discovery=await discoverGeminiFallback(ai);modelDiscoveryStatus=discovery.status;availableTextModels=discovery.availableTextModels||[];configuredModelListed=discovery.configuredModelListed??null;
-   const retryModel=discovery.model||([500,502,503,504].includes(result.response.status)?ai.model:null);
-   if(retryModel){await result.response.body?.cancel();await new Promise(r=>setTimeout(r,300));result=await requestGemini({...ai,model:retryModel},context,previous,input.question.trim());attemptedModels.push(result.model);if(discovery.model&&[500,502,503,504].includes(result.response.status)){await result.response.body?.cancel();await new Promise(r=>setTimeout(r,1200));result=await requestGemini({...ai,model:retryModel},context,previous,input.question.trim());attemptedModels.push(result.model)}}
+   const retryModel=discovery.model||(!result.response||[500,502,503,504].includes(result.response.status)?ai.model:null);
+   if(retryModel){await result.response?.body?.cancel();await new Promise(r=>setTimeout(r,300));result=await requestGemini({...ai,model:retryModel},context,previous,input.question.trim());attemptedModels.push(result.model);if(discovery.model&&(!result.response||[500,502,503,504].includes(result.response.status))){await result.response?.body?.cancel();await new Promise(r=>setTimeout(r,1200));result=await requestGemini({...ai,model:retryModel},context,previous,input.question.trim());attemptedModels.push(result.model)}}
   }
-  response=result.response;answer=result.answer;effectiveModel=result.model;modelVersion=result.modelVersion;
+  response=result.response;answer=result.answer;effectiveModel=result.model;modelVersion=result.modelVersion;providerFailure=result.failure||null;
  }else{
   response=await providerFetch('https://api.openai.com/v1/responses',{method:'POST',signal:AbortSignal.timeout(25000),headers:{Authorization:'Bearer '+ai.key,'Content-Type':'application/json'},body:JSON.stringify({model:ai.model,instructions:system,input:[{role:'user',content:context},...previous,{role:'user',content:input.question.trim()}],max_output_tokens:600,store:false})});
   if(response.ok){const result=await response.json();answer=result.output?.filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('\n')||''}
  }
+ if(!response)return json({error:'The AI connection could not complete. Please try again.',code:providerFailure==='timeout'?'AI_PROVIDER_TIMEOUT':'AI_PROVIDER_CONNECTION_FAILURE',providerStatus:null,attemptedModels,modelDiscoveryStatus},providerFailure==='timeout'?504:502);
  if(!response.ok){const code=response.status===401||response.status===403?'AI_AUTHENTICATION_OR_ACCESS':response.status===429?'AI_QUOTA_OR_RATE_LIMIT':response.status===404?'AI_MODEL_UNAVAILABLE':'AI_PROVIDER_UNAVAILABLE';return json({error:'The AI provider is unavailable. Please try later.',code,providerStatus:response.status,attemptedModels,modelDiscoveryStatus,availableTextModels,configuredModelListed},502)}
  if(!answer.trim())return json({error:'The AI provider returned no complete answer.',code:'AI_NO_COMPLETE_ANSWER'},502);
  return json({answer:answer.slice(0,12000),mode:'generative',provider:ai.provider,model:effectiveModel,modelVersion,fallbackUsed:effectiveModel!==ai.model});
