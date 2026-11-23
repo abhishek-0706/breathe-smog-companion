@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-11-23T15:45:28.117Z",
+  "checks": [
+    {
+      "name": "emergency",
+      "http_status": 200,
+      "mode": "safety-guidance",
+      "pass": true
+    },
+    {
+      "name": "cross_origin",
+      "http_status": 403,
+      "pass": true
+    }
+  ]
+}

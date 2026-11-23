@@ -1,8 +1,9 @@
 {
   "date": "2026-11-23",
+  "generated_at": "2026-11-23T15:45:23.777Z",
   "origin": "https://breathe-smog-companion.vercel.app",
   "provider": "gemini",
-  "model": "gemini-3.5-flash-lite",
+  "model": "gemini-4-hydrogen",
   "dataset": "data/golden-dataset.json",
   "scope": "Selected live user-question scenarios. Server uses real current modeled AQI; scenario AQI is not injected as a trusted reading. Semantic review required.",
   "cases": [
@@ -27,9 +28,18 @@
       "error": "The AI provider is unavailable. Please try later.",
       "code": "AI_PROVIDER_UNAVAILABLE",
       "providerStatus": 503,
-      "elapsed_ms": 14195
+      "elapsed_ms": 1273
     }
   ],
   "complete": false,
-  "review_status": "Pending independent semantic review; successful HTTP alone is not factual accuracy."
+  "flags": [
+    {
+      "case": "G01",
+      "severity": "blocking",
+      "code": "AI_PROVIDER_UNAVAILABLE",
+      "http_status": 502,
+      "provider_status": 503
+    }
+  ],
+  "review_status": "Blocked by failed live requests; live GenAI validation has not passed."
 }

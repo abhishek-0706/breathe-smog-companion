@@ -1,0 +1,48 @@
+{
+  "checked_at": "2026-11-23T15:46:06.191985+00:00",
+  "ready_to_submit": false,
+  "live_genai_passed": false,
+  "flags": [
+    {
+      "id": "GEMINI_UPSTREAM_UNAVAILABLE",
+      "severity": "blocking",
+      "app_http": 502,
+      "provider_http": 503,
+      "evidence": "reports/live-genai-evaluation.json"
+    },
+    {
+      "id": "DEMO_HOST_URL_MISSING",
+      "severity": "blocking",
+      "detail": "A narrated provider-outage preview exists locally; an accepted-host final demo URL is missing."
+    },
+    {
+      "id": "GOOGLE_DRIVE_DISABLED_BY_ADMIN",
+      "severity": "blocked_integration",
+      "detail": "Drive plugin is disabled by the workspace administrator; no upload was performed."
+    },
+    {
+      "id": "LINKEDIN_SKIPPED",
+      "severity": "user_choice",
+      "detail": "Owner declined LinkedIn posting; supplied form marks the field mandatory."
+    }
+  ],
+  "passed_live_checks": [
+    {
+      "name": "emergency",
+      "http_status": 200,
+      "mode": "safety-guidance",
+      "pass": true
+    },
+    {
+      "name": "cross_origin",
+      "http_status": 403,
+      "pass": true
+    }
+  ],
+  "prior_automated_verification": {
+    "tests_passed": 63,
+    "ci_run": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45204918529",
+    "codeql_report": "reports/security-scan.json"
+  },
+  "model": "gemini-4-hydrogen"
+}

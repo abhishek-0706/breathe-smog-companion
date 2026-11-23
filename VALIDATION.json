@@ -91,5 +91,17 @@
     ],
     "form_constraint": "LinkedIn URL is shown as mandatory in supplied form; user has declined posting.",
     "demo_preview": "../Breathe_Demo_Provider_Outage_Preview.mp4 (local artifact; not an accepted-host submission URL)"
+  },
+  "latest_live_recheck": {
+    "report": "reports/live-genai-evaluation.json",
+    "flags": "reports/submission-flags.json",
+    "ai_passed": false,
+    "provider_http_status": 503,
+    "safeguards_report": "reports/live-safeguard-recheck.json"
+  },
+  "drive_upload": {
+    "uploaded": false,
+    "reason": "Google Drive integration disabled by workspace administrator",
+    "manual_bundle": "../Breathe_Drive_Upload.zip"
   }
 }

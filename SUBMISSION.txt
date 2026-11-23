@@ -30,3 +30,10 @@ Evidence:
 - CodeQL scan evidence: reports/security-scan.json (scope and scanned commit recorded).
 - Current live-evaluation attempts are recorded as failures, not successful GenAI validation.
 - Do not click Submit with invented video or LinkedIn URLs.
+
+LATEST RECHECK
+- Gemini live test failed: app HTTP 502, provider HTTP 503; evaluator exits 1.
+- Emergency safeguard passed (HTTP 200); cross-origin rejection passed (HTTP 403).
+- Exact flags: reports/submission-flags.json.
+- Google Drive upload could not run: integration is disabled by workspace administrator.
+- Manual upload bundle: Breathe_Drive_Upload.zip in the parent workspace.
