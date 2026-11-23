@@ -1,10 +1,12 @@
 {
   "verified_on": "2026-11-23",
   "automated_tests": {
-    "total": 59,
-    "passed": 59,
+    "total": 63,
+    "passed": 63,
     "failed": 0,
-    "command": "npm test"
+    "command": "npm test",
+    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45204918529",
+    "ci_source_commit": "a4ef1bb3d4ab6db5f81a5564130b99b4c8ab3623"
   },
   "golden_dataset": {
     "cases": 30,
@@ -17,7 +19,10 @@
     "desktop_width": 1600,
     "mobile_width": 390,
     "browser": "Microsoft Edge headless",
-    "scope": "Overview, no overflow, settings, profile save and reload, checklist, calculator, community pledge, indoor page, emergency reply, mobile dialog"
+    "scope": "Overview, no overflow, settings, profile save and reload, checklist, calculator, community pledge, indoor page, emergency reply, mobile dialog",
+    "original_checks_verified_on": "2026-11-19",
+    "public_preview_captured_on": "2026-11-23",
+    "public_preview_scope": "Nine real app scenes, including profile, checklist, calculator, pledges, labeled provider fallback and deterministic emergency guidance."
   },
   "real_data": {
     "provider": "Open-Meteo / CAMS",
@@ -26,17 +31,26 @@
     "fake_fallback": false
   },
   "genai": {
-    "provider": "Google Gemini API (optional OpenAI supported)",
-    "configured": false,
+    "provider": "Google Gemini",
+    "configured": true,
     "live_model_evaluation": false,
-    "current_mode": "Gemini support implemented; production activation verification pending",
+    "current_mode": "Gemini configured; provider requests currently return HTTP 503 and UI labels curated fallback",
     "contract_tests": "Mocked, passed",
     "vercel_gateway_probe": {
       "http_status": 403,
       "reason": "customer_verification_required",
       "generated_response": false
     },
-    "model": "gemini-3.5-flash-lite"
+    "model": "gemini-4-hydrogen",
+    "initial_smoke": "An earlier gemini-3.5-flash-lite request returned HTTP 200 and a real generated answer; subsequent requests failed.",
+    "availability": "Blocked by repeated provider HTTP 503 across tested models",
+    "latest_observed_http": {
+      "app_status": 502,
+      "upstream_status": 503,
+      "model": "gemini-4-hydrogen",
+      "code": "AI_PROVIDER_UNAVAILABLE",
+      "validated_success": false
+    }
   },
   "security": {
     "application_security_tests": "Passed",
@@ -48,8 +62,9 @@
       "open_alerts": 0,
       "rules_count": 103,
       "version": "2.27.5",
-      "source_commit": "872c68838b0af3066f537ba09679a55515054aba",
-      "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45200739495"
+      "source_commit": "a4ef1bb3d4ab6db5f81a5564130b99b4c8ab3623",
+      "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45204916345",
+      "actions_rules_count": 23
     }
   },
   "deployment": {
@@ -71,9 +86,10 @@
     "ready": false,
     "linkedin": "Skipped at user request",
     "required_pending": [
-      "Live GenAI activation and evaluation",
-      "Accepted-host demo video URL"
+      "Stable live-model validation",
+      "Accepted-host final demo video URL"
     ],
-    "form_constraint": "LinkedIn URL is shown as mandatory in supplied form; user has declined posting."
+    "form_constraint": "LinkedIn URL is shown as mandatory in supplied form; user has declined posting.",
+    "demo_preview": "../Breathe_Demo_Provider_Outage_Preview.mp4 (local artifact; not an accepted-host submission URL)"
   }
 }

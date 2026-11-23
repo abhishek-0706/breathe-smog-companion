@@ -1,32 +1,32 @@
-SUBMISSION WORKSHEET — BREATHE
+BREATHE - SUBMISSION PACK
+Updated 23 November 2026
+Status: technical source and public deployment verified; final submission remains blocked by current Gemini availability and a hosted final demo URL.
+LinkedIn: skipped at user request. The supplied form marks this field mandatory.
 
-Challenge: Select the severe winter smog / urban air pollution assistant challenge in the platform list.
+Challenge:
+Challenge 6 - Severe winter smog and urban air pollution assistant
 
 Public GitHub Repository Link:
 https://github.com/abhishek-0706/breathe-smog-companion
-VERIFIED PUBLIC. Source code is below 10 MB; local environment files and runtime credentials are excluded.
 
 Project Deployed Link:
 https://breathe-smog-companion.vercel.app
-VERIFIED PUBLIC VERCEL DEPLOYMENT. Homepage and real Open-Meteo/CAMS endpoint return HTTP 200 without authentication. Preview deployment URLs remain protected.
 
 Project Demo Video Submission:
-PENDING. Record the walkthrough in DEMO_SCRIPT.txt, upload to unlisted YouTube or an appropriately shared Drive file, and paste its actual https URL. Do not substitute a screenshot, fabricated URL or repository link.
+PENDING - upload the final validated recording to unlisted YouTube or a shared Drive file.
 
-Describe the changes/updates made in the deployed version (under 1024 characters):
-Built Breathe, a responsive smog companion with live Open-Meteo/CAMS outdoor estimates, modeled U.S. AQI with timestamps and stale-data handling, household personalization, daily low-emission routines, indoor-air guidance, community pledges, and a transparent CO2 scenario calculator. Added a server-side OpenAI integration with explicit guided fallback, deterministic critical-safety responses, constrained inputs and secret protection. Added a research-backed 30-case golden dataset, 52 passing automated checks, and 12 desktop/mobile browser checks. Unavailable data is never presented as a live example reading.
+Describe the changes/updates made in the deployed version:
+Built Breathe with live Open-Meteo/CAMS modeled outdoor air quality, source timestamps, stale-data handling, household personalization, low-emission daily routines, indoor-air guidance, community pledges and a transparent CO2 scenario calculator. Integrated server-side Google Gemini with secret protection, critical-safety responses, bounded retries and clearly labeled fallback. Added a sourced 30-case golden dataset, 63 passing automated tests, pinned GitHub CI and CodeQL analysis. Current provider HTTP 503 errors are recorded honestly; final live-model validation remains blocked.
 
-Mention the Gen AI services utilized and where (under 1024 characters):
-IMPLEMENTATION STATUS: OpenAI Responses API is implemented server-side for contextual clean-air chat, using household preferences, recent conversation and server-fetched modeled AQI. Deterministic safeguards handle critical hazards. The current deployment uses curated guided mode until OPENAI_API_KEY is configured; do not claim runtime GenAI utilization yet. After configuration and live evaluation, update this field with the actual model and verified usage. Guided rules and Open-Meteo data are not GenAI services.
+Mention the Gen AI services utilized in the submission, and where did you utilize it?:
+Google Gemini API is integrated server-side for contextual clean-air chat using normalized household preferences, bounded conversation context and server-fetched air estimates. Production selects Gemini 4 Hydrogen via stateless Interactions requests; the key is stored as a Vercel Secret. An initial Gemini Flash-Lite smoke test generated a real answer; subsequent requests returned HTTP 503, so final live-model validation has not passed. Curated fallback is explicitly labeled. Open-Meteo/CAMS supplies real modeled air data and is not a GenAI service.
 
-LinkedIn Post URL:
-PENDING. Publish the draft in LINKEDIN_DRAFT.txt yourself and paste the actual https://www.linkedin.com/posts/... URL. A draft is not a published post.
+LinkedIn Post:
+SKIPPED AT USER REQUEST
 
-FINAL READINESS GATES
-- Public GitHub repository exists, is readable signed out, and source content is under 10 MB.
-- Deployed application opens for intended evaluators.
-- Runtime GenAI is configured, works and is semantically evaluated; accurately state model and limitations.
-- Codex Security scan runs after its plugin is enabled; review and fix relevant findings.
-- Demo video is accessible through unlisted YouTube or shared Drive.
-- LinkedIn post is published and its actual post URL is available.
-- Keep submission attempts within the platform's three-attempt limit.
+Evidence:
+- 63 automated tests pass locally and in the recorded GitHub CI run.
+- 30 sourced synthetic golden scenarios; no patient records or fabricated live readings.
+- CodeQL scan evidence: reports/security-scan.json (scope and scanned commit recorded).
+- Current live-evaluation attempts are recorded as failures, not successful GenAI validation.
+- Do not click Submit with invented video or LinkedIn URLs.

@@ -4,13 +4,19 @@
   "version": "2.27.5",
   "query_suite": "extended",
   "language": "javascript-typescript",
-  "analysis_id": 2230798258,
-  "run_id": 45200739495,
-  "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45200739495",
-  "commit_sha": "872c68838b0af3066f537ba09679a55515054aba",
+  "analysis_id": 2231002218,
+  "run_id": 45204916345,
+  "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45204916345",
+  "commit_sha": "a4ef1bb3d4ab6db5f81a5564130b99b4c8ab3623",
   "rules_count": 103,
   "results_count": 0,
   "open_alerts_at_verification": 0,
   "conclusion": "success",
-  "scope_limit": "Static analysis of the referenced commit. Not a guarantee of no vulnerabilities; not a Codex Security scan."
+  "scope_limit": "Static analysis of the referenced commit. Not a guarantee of no vulnerabilities; not a Codex Security scan.",
+  "additional_analysis": {
+    "language": "actions",
+    "analysis_id": 2230997943,
+    "rules_count": 23,
+    "results_count": 0
+  }
 }

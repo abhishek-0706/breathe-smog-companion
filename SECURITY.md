@@ -17,7 +17,7 @@ Review date: 23 November 2026. Scope: source, built Worker, deterministic guided
 
 ## Verification
 
-59 automated tests pass, including CSRF, SSRF allowlisting, bounded requests, secret non-disclosure, provider errors, malicious profile fields, role filtering, no fake data, stale timestamps, mathematical units and rate-limit behavior. Twelve local browser checks pass at desktop and 390px mobile widths. Real Open-Meteo requests returned HTTP 200; provider results remain estimates rather than monitor measurements.
+63 automated tests pass, including CSRF, SSRF allowlisting, bounded requests, secret non-disclosure, provider errors, malicious profile fields, role filtering, no fake data, stale timestamps, mathematical units and rate-limit behavior. Twelve local browser checks pass at desktop and 390px mobile widths. Real Open-Meteo requests returned HTTP 200; provider results remain estimates rather than monitor measurements.
 
 The research agent's independent golden tests initially failed important cases. Guidance was corrected to address emergency wording, CO poisoning hazards, heat, respirator dizziness, missing data and unsupported causal claims. All selected automated assertions now pass.
 
@@ -25,7 +25,7 @@ The research agent's independent golden tests initially failed important cases. 
 
 ## GitHub CodeQL static analysis
 
-[Extended CodeQL scan](https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45200739495) completed successfully on 23 November 2026. CodeQL 2.27.5 analyzed JavaScript/TypeScript with 103 rules, reporting zero results; the open-alert query also returned zero. The scanned source commit is recorded in [reports/security-scan.json](reports/security-scan.json). Documentation and CI additions after that commit trigger subsequent scans and are reported separately.
+[Extended CodeQL scan](https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45204916345) completed successfully on 23 November 2026. CodeQL 2.27.5 analyzed JavaScript/TypeScript with 103 rules and GitHub Actions with 23 rules, reporting zero results; the open-alert query also returned zero. The scanned source commit is recorded in [reports/security-scan.json](reports/security-scan.json). Documentation and CI additions after that commit trigger subsequent scans and are reported separately.
 
 This is an actual GitHub CodeQL scan, not a Codex Security plugin scan. Static analysis has limits and does not establish that no vulnerabilities exist. The submission-check workflow also builds the artifacts, runs all tests and checks source size and tracked-secret-file exclusions with read-only repository permissions and pinned official actions.
 

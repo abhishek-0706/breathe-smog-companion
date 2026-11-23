@@ -58,3 +58,12 @@ This small research-authored set is a baseline regression suite. It does not est
 `tests/golden.test.mjs` links every dataset case ID to independently written, scenario-specific regular-expression assertions (or direct index-boundary assertions). It exercises `guidedReply` and `category`, not an OpenAI response. The checks cover a **subset** of the expected facts. Except for explicit affirmative unsafe-claim patterns, forbidden-advice lists still require semantic review; a response can match a required phrase and remain incomplete or unsafe elsewhere. No automatic whole-dataset semantic pass rate is claimed.
 
 Run `node --test --test-isolation=none tests/golden.test.mjs` in environments that prohibit test-runner subprocess creation. The initial run on 19 November 2026 yielded 12 passing tests and 22 failing tests, identifying real routing and content gaps before remediation. Re-run after fixes; this historical result is not the final application result.
+
+## Provider implementation references (23 November 2026)
+
+- Gemini GenerateContent API: https://ai.google.dev/api/generate-content
+- Current model catalog: https://aistudio.google.com/docs/models
+- Stateless Interactions requests and response steps: https://aistudio.google.com/docs/get-started
+- Gemini transient-error handling: https://aistudio.google.com/docs/troubleshooting
+
+The production secret is configured, but repeated provider HTTP 503 responses prevented final live-model evaluation. These failures are preserved in the reports. Do not interpret mocked provider tests, successful CI or a configured key as successful live-model validation.

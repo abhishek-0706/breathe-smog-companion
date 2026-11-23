@@ -1,0 +1,18 @@
+{
+  "verified_on": "2026-11-23",
+  "ready_to_submit": false,
+  "fields": {
+    "Challenge": "Challenge 6 - Severe winter smog and urban air pollution assistant",
+    "Public GitHub Repository Link": "https://github.com/abhishek-0706/breathe-smog-companion",
+    "Project Deployed Link": "https://breathe-smog-companion.vercel.app",
+    "Project Demo Video Submission": null,
+    "Describe the changes/updates made in the deployed version": "Built Breathe with live Open-Meteo/CAMS modeled outdoor air quality, source timestamps, stale-data handling, household personalization, low-emission daily routines, indoor-air guidance, community pledges and a transparent CO2 scenario calculator. Integrated server-side Google Gemini with secret protection, critical-safety responses, bounded retries and clearly labeled fallback. Added a sourced 30-case golden dataset, 63 passing automated tests, pinned GitHub CI and CodeQL analysis. Current provider HTTP 503 errors are recorded honestly; final live-model validation remains blocked.",
+    "Mention the Gen AI services utilized in the submission, and where did you utilize it?": "Google Gemini API is integrated server-side for contextual clean-air chat using normalized household preferences, bounded conversation context and server-fetched air estimates. Production selects Gemini 4 Hydrogen via stateless Interactions requests; the key is stored as a Vercel Secret. An initial Gemini Flash-Lite smoke test generated a real answer; subsequent requests returned HTTP 503, so final live-model validation has not passed. Curated fallback is explicitly labeled. Open-Meteo/CAMS supplies real modeled air data and is not a GenAI service.",
+    "LinkedIn Post": null
+  },
+  "pending": [
+    "Stable successful GenAI evaluation",
+    "Accepted-host final demo video URL"
+  ],
+  "linkedin": "Skipped at explicit user request; the supplied form marks this as required."
+}
