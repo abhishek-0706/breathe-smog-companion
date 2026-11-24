@@ -7,7 +7,13 @@ import {
   avoidedCarbon,
   guidedReply,
 } from "/guidance.js";
-import { readSaved, writeSaved, clearSaved } from "./storage.js";
+import {
+  readSaved,
+  writeSaved,
+  clearSaved,
+  readSelections,
+} from "./storage.js";
+import { CITY_TIMEZONES, localDay, forecastPoints } from "../lib/time.mjs";
 const $ = (s) => document.querySelector(s);
 $("#city").replaceChildren(
   ...Object.keys(CITIES).map((city) => {
@@ -46,8 +52,10 @@ function escapeHTML(s) {
 }
 const read = readSaved;
 function save(key, value) {
-  if (!writeSaved(key, value))
+  const saved = writeSaved(key, value);
+  if (!saved)
     toast("Browser storage is unavailable. Changes last until you leave.");
+  return saved;
 }
 let profile = normalizeProfile(
     read("breathe-profile", { budget: "No-cost first" }),
@@ -59,17 +67,45 @@ let profile = normalizeProfile(
   aiEnabled = false,
   aiProvider = "",
   requestId = 0;
-const today = new Date().toLocaleDateString("en-CA", {
-  timeZone: "Asia/Kolkata",
-});
-let completed = read("breathe-actions-" + today, []);
-if (!Array.isArray(completed)) completed = [];
-completed = [
-  ...new Set(completed.filter((id) => ["move", "room", "cook"].includes(id))),
-];
-let pledges = read("breathe-pledges", []);
-if (!Array.isArray(pledges)) pledges = [];
-let history = [];
+let today = localDay(profile.city);
+let completed = readSelections("breathe-actions-" + today, [
+  "move",
+  "room",
+  "cook",
+]);
+let pledges = readSelections("breathe-pledges", [
+  "idling",
+  "burning",
+  "neighbour",
+]);
+let history = [],
+  conversationId = 0,
+  chatController = null;
+const greeting = $("#chat-log").firstElementChild.cloneNode(true);
+function syncDay() {
+  const next = localDay(profile.city);
+  if (next === today) return false;
+  today = next;
+  completed = readSelections("breathe-actions-" + today, [
+    "move",
+    "room",
+    "cook",
+  ]);
+  return true;
+}
+function resetConversation() {
+  conversationId++;
+  chatController?.abort();
+  chatController = null;
+  history = [];
+  $("#chat-log").replaceChildren(greeting.cloneNode(true));
+  $("#chat-log").setAttribute("aria-busy", "false");
+  $("#send").disabled = false;
+  $("#question").value = "";
+  $("#assistant-mode").textContent = aiEnabled
+    ? "Generative AI - " + aiProvider
+    : "Guided mode - curated guidance";
+}
 const nav = [
   ["overview", "dashboard", "Overview"],
   ["routines", "leaf", "My routines"],
@@ -98,7 +134,7 @@ function date() {
     day: "numeric",
     month: "long",
     weekday: "short",
-    timeZone: "Asia/Kolkata",
+    timeZone: CITY_TIMEZONES[profile.city],
   }).format(new Date());
 }
 function currentAqi() {
@@ -133,22 +169,14 @@ function routineCards() {
     .join("")}</div>`;
 }
 function forecast() {
-  if (!air?.hourly) return "";
-  const points = air.hourly.time
-    .map((time, i) => ({ time, value: air.hourly.us_aqi[i] }))
-    .filter(
-      (x) =>
-        Number.isFinite(x.value) &&
-        new Date(x.time + "Z").getTime() >=
-          new Date(air.current.time + "Z").getTime(),
-    )
-    .filter((_, i) => i % 3 === 0)
-    .slice(0, 8);
+  if (!isCurrentAir(air)) return "";
+  const points = forecastPoints(air);
   if (!points.length) return "";
   const max = Math.max(...points.map((p) => p.value), 1);
   return `<section class="card wide-card"><div class="section-line"><h2>The next 24 hours</h2><span class="data-note">Forecast · U.S. AQI</span></div><div class="forecast" aria-hidden="true">${points.map((p) => `<div class="forecast-col"><span class="forecast-value">${Math.round(p.value)}</span><div class="bar" style="height:${(p.value / max) * 95}px"></div><span>${p.time.slice(11, 16)}</span></div>`).join("")}</div><ul class="sr-only" aria-label="Forecast values">${points.map((p) => "<li>" + p.time.slice(11, 16) + ": modeled U.S. AQI " + Math.round(p.value) + "</li>").join("")}</ul><p class="data-note">Local time in ${escapeHTML(air.timezone)}. A lower forecast is not a guarantee of safe conditions; check local alerts.</p></section>`;
 }
 function render() {
+  syncDay();
   const active = document.activeElement;
   const focusKey = active?.closest("#page")
     ? active.id
@@ -300,6 +328,9 @@ async function loadAir() {
 }
 async function ask(text) {
   if ($("#send").disabled) return;
+  const thisConversation = conversationId;
+  const controller = new AbortController();
+  chatController = controller;
   $("#question").value = "";
   const user = document.createElement("div");
   user.className = "message user";
@@ -324,12 +355,24 @@ async function ask(text) {
           aqi: currentAqi(),
           history: history.slice(-8),
         }),
-        signal: AbortSignal.timeout(60000),
+        signal: AbortSignal.any([
+          controller.signal,
+          AbortSignal.timeout(60000),
+        ]),
       });
       const result = await res.json();
+      if (thisConversation !== conversationId) return;
+      if (
+        typeof result.answer !== "string" ||
+        !result.answer.trim() ||
+        !["generative", "reference-guidance", "safety-guidance"].includes(
+          result.mode,
+        )
+      )
+        throw new Error("Invalid assistant response");
       if (!res.ok)
         throw new Error(result.error || "The assistant is unavailable.");
-      answer = result.answer;
+      answer = result.answer.slice(0, 12000);
       $("#assistant-mode").textContent =
         result.mode === "generative"
           ? "Generative AI - " + aiProvider
@@ -352,14 +395,18 @@ async function ask(text) {
       bot.textContent = answer + "\n\nGuided mode · curated guidance";
     }
   } catch {
+    if (thisConversation !== conversationId) return;
     $("#assistant-mode").textContent = "Guided fallback - AI unavailable";
     bot.textContent =
       "The AI service is unavailable. Here is a curated fallback:\n\n" +
       guidedReply(text, profile, currentAqi());
   } finally {
-    $("#send").disabled = false;
-    $("#chat-log").setAttribute("aria-busy", "false");
-    $("#chat-log").scrollTop = $("#chat-log").scrollHeight;
+    if (thisConversation === conversationId) {
+      chatController = null;
+      $("#send").disabled = false;
+      $("#chat-log").setAttribute("aria-busy", "false");
+      $("#chat-log").scrollTop = $("#chat-log").scrollHeight;
+    }
   }
 }
 document.addEventListener("click", (e) => {
@@ -393,13 +440,18 @@ document.addEventListener("click", (e) => {
     showInfoDialog();
   }
   if (b.dataset.done) {
+    syncDay();
     const id = b.dataset.done;
     completed = completed.includes(id)
       ? completed.filter((x) => x !== id)
       : [...completed, id];
-    save("breathe-actions-" + today, completed);
+    const persisted = save("breathe-actions-" + today, completed);
     render();
-    toast("Your daily check-in is saved.");
+    toast(
+      persisted
+        ? "Your daily check-in is saved."
+        : "Your check-in applies to this session. Browser storage is unavailable.",
+    );
   }
   if (b.dataset.prompt) ask(b.dataset.prompt);
   if (b.id === "download-pledge") {
@@ -421,7 +473,7 @@ document.addEventListener("click", (e) => {
     profile = normalizeProfile({ budget: "No-cost first" });
     completed = [];
     pledges = [];
-    history = [];
+    resetConversation();
     $("#info-dialog").close();
     loadAir();
     toast(
@@ -455,10 +507,15 @@ $("#profile-form").addEventListener("submit", (e) => {
     sensitive: form.has("sensitive"),
     purifier: form.has("purifier"),
   });
-  save("breathe-profile", profile);
+  resetConversation();
+  const persisted = save("breathe-profile", profile);
   $("#profile-dialog").close();
   loadAir();
-  toast("Your plan is now a little more you.");
+  toast(
+    persisted
+      ? "Your plan is now a little more you."
+      : "Preferences updated for this session. Browser storage is unavailable.",
+  );
 });
 $("#chat-form").addEventListener("submit", (e) => {
   e.preventDefault();
@@ -468,9 +525,13 @@ $("#chat-form").addEventListener("submit", (e) => {
 render();
 loadAir();
 fetch("/api/status")
-  .then((r) => r.json())
+  .then((r) => {
+    if (!r.ok) throw new Error("Status unavailable");
+    return r.json();
+  })
   .then((data) => {
-    aiEnabled = data.aiEnabled === true;
+    aiEnabled =
+      data.aiEnabled === true && ["gemini", "openai"].includes(data.provider);
     aiProvider = data.provider === "gemini" ? "Google Gemini" : "OpenAI";
     $("#assistant-mode").textContent = aiEnabled
       ? "Generative AI - " + aiProvider
@@ -488,6 +549,7 @@ setInterval(
   5 * 60 * 1000,
 );
 document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && syncDay()) render();
   if (
     !document.hidden &&
     !busy &&
@@ -495,3 +557,7 @@ document.addEventListener("visibilitychange", () => {
   )
     loadAir();
 });
+
+setInterval(() => {
+  if (!document.hidden && syncDay()) render();
+}, 60000);

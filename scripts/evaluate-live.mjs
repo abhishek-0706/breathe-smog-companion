@@ -1,5 +1,13 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 const origin = "https://breathe-smog-companion.vercel.app";
+const reportDirectory =
+  "../Private_Validation/rigorous-" +
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 const dataset = JSON.parse(await readFile("data/golden-dataset.json", "utf8"));
 const selected = process.argv.includes("--all")
   ? dataset.cases.map((c) => c.id)
@@ -35,6 +43,11 @@ const report = {
   }).format(new Date()),
   generated_at: new Date().toISOString(),
   origin,
+  deployment_revision: /^[a-f0-9]{40}$/.test(
+    process.env.BREATHE_EVALUATION_REVISION || "",
+  )
+    ? process.env.BREATHE_EVALUATION_REVISION
+    : null,
   provider: status.provider,
   model: status.model,
   dataset: "data/golden-dataset.json",
@@ -43,7 +56,7 @@ const report = {
   cases: [],
   complete: false,
 };
-await mkdir("../Private_Validation", { recursive: true });
+await mkdir(reportDirectory, { recursive: true });
 for (const id of selected) {
   const c = dataset.cases.find((c) => c.id === id);
   const profile = {
@@ -86,7 +99,7 @@ for (const id of selected) {
   }
   report.cases.push(record);
   await writeFile(
-    "../Private_Validation/live-genai-evaluation.json",
+    reportDirectory + "/live-genai-evaluation.json",
     JSON.stringify(report, null, 2) + "\n",
   );
   console.log(
@@ -124,7 +137,7 @@ report.review_status = report.complete
   ? "Pending independent semantic review; successful HTTP alone is not factual accuracy."
   : "Blocked by failed live requests; live GenAI validation has not passed.";
 await writeFile(
-  "../Private_Validation/live-genai-evaluation.json",
+  reportDirectory + "/live-genai-evaluation.json",
   JSON.stringify(report, null, 2) + "\n",
 );
 console.log(

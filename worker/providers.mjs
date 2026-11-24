@@ -137,10 +137,11 @@ export async function requestGemini(ai, context, previous, question, deadline) {
         const candidate = result.candidates?.[0];
         if (
           !result.promptFeedback?.blockReason &&
-          candidate?.finishReason === "STOP"
+          candidate?.finishReason === "STOP" &&
+          !candidate.safetyRatings?.some?.((rating) => rating?.blocked === true)
         )
           answer = (candidate.content?.parts || [])
-            .filter((x) => !x.thought && typeof x.text === "string")
+            .filter((x) => x && !x.thought && typeof x.text === "string")
             .map((x) => x.text)
             .join("\n");
       }

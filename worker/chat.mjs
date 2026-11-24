@@ -144,7 +144,9 @@ export async function generateChat(
           ? result.output
               ?.filter((x) => x.type === "message")
               .flatMap((x) => x.content || [])
-              .filter((x) => x.type === "output_text")
+              .filter(
+                (x) => x?.type === "output_text" && typeof x.text === "string",
+              )
               .map((x) => x.text)
               .join("\n") || ""
           : "";

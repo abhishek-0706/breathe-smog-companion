@@ -3,6 +3,7 @@ import {
   normalizeProfile,
   guidedReply,
   referenceReply,
+  safetyReply,
 } from "../lib/guidance.mjs";
 import { CITIES, HEADERS } from "./config.mjs";
 import {
@@ -46,13 +47,24 @@ export default {
           url.origin + "/api/air?city=" + encodeURIComponent(city),
         );
         const cache = globalThis.caches?.default;
-        const hit = cache ? await cache.match(cacheKey) : null;
+        let hit = null;
+        try {
+          hit = cache ? await cache.match(cacheKey) : null;
+        } catch {
+          /* Caching is optional. */
+        }
         if (hit) return hit;
         const data = await liveAir(city, env);
         const response = json(data, 200, {
           "Cache-Control": "public, max-age=300",
         });
-        if (cache) await cache.put(cacheKey, response.clone());
+        if (cache) {
+          try {
+            await cache.put(cacheKey, response.clone());
+          } catch {
+            /* Return healthy provider data even if cache storage is unavailable. */
+          }
+        }
         return response;
       }
       if (path === "/api/chat" && request.method === "POST") {
@@ -87,14 +99,12 @@ export default {
         const profile = normalizeProfile(input.profile);
         let aqi = null,
           airObservation = null;
-        if (
-          /chest pain|cannot breathe|can.t breathe|struggl.*breath|severe.*breath|blue lips|faint|unusually sleepy|dizz|generator|charcoal|overheat|too hot|very hot|dangerous.*hot|hot inside|heatstroke|heat wave|medication|inhaler|dose|asthma attack/i.test(
-            input.question,
-          )
-        )
+        const urgent = safetyReply(input.question);
+        if (urgent)
           return json({
-            answer: guidedReply(input.question, profile, aqi),
+            answer: urgent,
             mode: "safety-guidance",
+            basis: "curated-public-health",
           });
         const reference = referenceReply(input.question);
         if (reference)

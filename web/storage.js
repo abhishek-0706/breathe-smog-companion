@@ -27,3 +27,11 @@ export function clearSaved() {
     return false;
   }
 }
+
+/** Only valid unique selections may contribute to progress or commitment counts. */
+export function readSelections(key, allowed) {
+  const values = readSaved(key, []);
+  return Array.isArray(values)
+    ? [...new Set(values.filter((value) => allowed.includes(value)))]
+    : [];
+}

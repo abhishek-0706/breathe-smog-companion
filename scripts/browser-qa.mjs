@@ -1,5 +1,6 @@
 ﻿import { readFile, writeFile, mkdir } from "node:fs/promises";
 import axe from "axe-core";
+import { advancedScenarios } from "./browser-scenarios.mjs";
 const origin = process.env.BREATHE_QA_ORIGIN || "http://127.0.0.1:4180";
 const debugPort = Number(process.env.BREATHE_DEBUG_PORT || 9341);
 if (new URL(origin).hostname !== "127.0.0.1")
@@ -301,6 +302,16 @@ try {
       "base64",
     ),
   );
+  report.extended = await advancedScenarios({
+    cdp,
+    evaluate,
+    until,
+    check,
+    audit,
+    click,
+    view,
+    pause,
+  });
   report.complete = true;
 } catch (error) {
   report.complete = false;
@@ -325,9 +336,9 @@ try {
     report.checks.every((c) => c.pass) &&
     report.accessibility.every((a) => a.violations.length === 0) &&
     runtimeErrors.length === 0;
-  await mkdir("../Private_Validation", { recursive: true });
+  await mkdir("../Private_Validation/rigorous-2026-11-24", { recursive: true });
   await writeFile(
-    "../Private_Validation/browser-accessibility.json",
+    "../Private_Validation/rigorous-2026-11-24/browser-accessibility.json",
     JSON.stringify(report, null, 2) + "\n",
   );
   console.log(
