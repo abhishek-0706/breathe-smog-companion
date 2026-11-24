@@ -3,19 +3,19 @@
   "tool": "GitHub CodeQL",
   "version": "2.27.5",
   "query_suite": "extended",
-  "commit_sha": "6f8fd69d0964d62e4bf428129f8e8b515888110b",
+  "commit_sha": "0a15cadf9033588996c970d587f2b304760e9c72",
   "conclusion": "success",
-  "run_id": 45336456249,
-  "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45336456249",
+  "run_id": 45356744095,
+  "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45356744095",
   "analyses": [
     {
       "language": "javascript-typescript",
-      "analysis_id": 2236394883,
+      "analysis_id": 2237161181,
       "rules_count": 103
     },
     {
       "language": "actions",
-      "analysis_id": 2236393795,
+      "analysis_id": 2237159177,
       "rules_count": 23
     }
   ],

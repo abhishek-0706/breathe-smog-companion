@@ -1,9 +1,9 @@
 {
   "verified_on": "2026-11-24",
-  "runtime_source_commit": "6f8fd69d0964d62e4bf428129f8e8b515888110b",
+  "runtime_source_commit": "0a15cadf9033588996c970d587f2b304760e9c72",
   "automated_tests": {
     "passed": 110,
-    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45336456016",
+    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45356745285",
     "environments": [
       "Windows / Node 24",
       "GitHub Ubuntu 24.04 / Node 24"
@@ -31,5 +31,6 @@
     "scope": "One live response per researched scenario, followed by assistant review. Transport completion is separate from semantic accuracy. Subsequent pediatric safety routing was rechecked on the final release."
   },
   "model_quality_limits": "Generated answers can omit relevant details or make overbroad claims. No full semantic or clinical accuracy certification is claimed.",
-  "diagnostics": "Raw runs and detailed review notes are maintained outside the repository."
+  "diagnostics": "Raw runs and detailed review notes are maintained outside the repository.",
+  "code_quality_report": "reports/code-quality.json"
 }

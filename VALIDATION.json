@@ -6,8 +6,8 @@
     "passed": 110,
     "command": "npm run build && npm test",
     "provider_calls": "Mocked; no live model-accuracy claim",
-    "ci_source_commit": "6f8fd69d0964d62e4bf428129f8e8b515888110b",
-    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45336456016"
+    "ci_source_commit": "0a15cadf9033588996c970d587f2b304760e9c72",
+    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45356745285"
   },
   "golden_dataset": {
     "cases": 30,
@@ -47,17 +47,23 @@
   "production_checks": {
     "report": "reports/production-checks.json",
     "checks_passed": 30,
-    "runtime_source_commit": "6f8fd69d0964d62e4bf428129f8e8b515888110b"
+    "runtime_source_commit": "0a15cadf9033588996c970d587f2b304760e9c72"
   },
   "lighthouse": {
     "report": "reports/lighthouse-summary.json",
     "scores": {
-      "performance": 100,
+      "performance": 97,
       "accessibility": 100,
       "best_practices": 100,
       "seo": 100
     },
     "scope": "One emulated-mobile lab run; challenge evaluation is separate."
   },
-  "rigorous_report": "reports/rigorous-validation.json"
+  "rigorous_report": "reports/rigorous-validation.json",
+  "code_quality": {
+    "report": "reports/code-quality.json",
+    "strict_types": "passed",
+    "eslint": "passed; zero warnings",
+    "complexity_limit": 15
+  }
 }

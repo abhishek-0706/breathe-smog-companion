@@ -1,21 +1,21 @@
 {
   "verified_on": "2026-11-24",
-  "source_commit": "6f8fd69d0964d62e4bf428129f8e8b515888110b",
+  "source_commit": "0a15cadf9033588996c970d587f2b304760e9c72",
   "tool": "Google Lighthouse",
   "version": "13.6.0",
   "url": "https://breathe-smog-companion.vercel.app",
   "scores": {
-    "performance": 100,
+    "performance": 97,
     "accessibility": 100,
     "best-practices": 100,
     "seo": 100
   },
   "metrics": {
-    "first-contentful-paint": 1338.81,
-    "largest-contentful-paint": 1338.81,
+    "first-contentful-paint": 1382.2625,
+    "largest-contentful-paint": 1382.2625,
     "cumulative-layout-shift": 0,
-    "total-blocking-time": 36.5,
-    "speed-index": 1577.0721482867752
+    "total-blocking-time": 109,
+    "speed-index": 4385.804658338793
   },
   "metric_units": {
     "paint_and_speed": "milliseconds",

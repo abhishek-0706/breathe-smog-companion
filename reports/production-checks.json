@@ -1,7 +1,7 @@
 {
   "verified_on": "2026-11-24",
-  "source_commit": "6f8fd69d0964d62e4bf428129f8e8b515888110b",
-  "deployment_id": "dpl_H7RCkCJYQUXnthuKE1WsoWZCPFBD",
+  "source_commit": "0a15cadf9033588996c970d587f2b304760e9c72",
+  "deployment_id": "dpl_4aygWPZEPQKPNjDSkG4aE8Jvd1Ww",
   "application": "https://breathe-smog-companion.vercel.app",
   "checks_passed": 30,
   "checks_by_kind": {
@@ -17,9 +17,9 @@
   },
   "asset_hashes": {
     "/": "f6c1aaaf6e7249590cce9281027261c848d47ce088f7a433cef49825d2433d65",
-    "/app.js": "9eacc3f8512d1996993a5788feda999958c761ca24c6f978330e07fd1050e7bd",
+    "/app.js": "d3ae3e7023fc1ab41c90efa9a2eeea12e298be1b5d56562ce7d7a4843ac133ef",
     "/style.css": "50c9678276d3dbde0754faa4ab29b16dc14e17ebcb2f53b3226cbfe2d3fc7566",
-    "/guidance.js": "80b16a3b543ef36fee955e5c0031bd2a90bc5a0453cad56d844507ca3cf7f8ed",
+    "/guidance.js": "3197c00424482251c3437cbf7d595a837470be2efdc959b151499cceea524dd2",
     "/favicon.svg": "051233807fb018de9a0fdbbbe23a0d47988d5b84c71b2846a01ccdd8a6c05530"
   },
   "supported_cities_verified": 9,

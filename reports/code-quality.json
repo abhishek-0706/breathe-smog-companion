@@ -1,6 +1,6 @@
 {
   "verified_on": "2026-11-24",
-  "scope": "Runtime refactor introduced by the commit containing this report; follow-up release reports identify the deployed revision.",
+  "scope": "Runtime refactor validated locally and by independent GitHub CI; source_commit identifies the deployed runtime revision.",
   "checks": {
     "eslint_errors": 0,
     "eslint_warnings": 0,
@@ -20,5 +20,7 @@
     "unchanged_routine_combination_outputs": 120
   },
   "contracts": "Strict checked JavaScript covers shared domain modules, browser code, worker handlers/providers and the Vercel adapter. ESLint prevents browser/shared code from importing server implementations or Node APIs.",
-  "limits": "Complexity and static checks support maintainability; they do not guarantee a challenge score, complete security or GenAI factual accuracy."
+  "limits": "Complexity and static checks support maintainability; they do not guarantee a challenge score, complete security or GenAI factual accuracy.",
+  "source_commit": "0a15cadf9033588996c970d587f2b304760e9c72",
+  "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45356745285"
 }

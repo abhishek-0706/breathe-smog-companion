@@ -1,6 +1,6 @@
 {
   "verified_on": "2026-11-24",
-  "source_commit": "6f8fd69d0964d62e4bf428129f8e8b515888110b",
+  "source_commit": "0a15cadf9033588996c970d587f2b304760e9c72",
   "browser": "Microsoft Edge headless",
   "fixture_kind": "Synthetic deterministic air data and guided mode; not a live-provider or model-accuracy test.",
   "workflow_checks_passed": 82,
