@@ -162,12 +162,21 @@ test("Emergency safeguards run before Gemini calls", async () => {
   globalThis.fetch = () =>
     assert.fail("No upstream request allowed for critical safety intent");
   try {
-    const r = await worker.fetch(
-      request("/api/chat", { question: "My child is struggling to breathe" }),
-      env,
-    );
-    assert.equal(r.status, 200);
-    assert.equal((await r.json()).mode, "safety-guidance");
+    for (const question of [
+      "My child is struggling to breathe",
+      "Outdoor air is smoky, but my closed apartment is dangerously hot.",
+      "The flat is too hot to keep windows shut",
+      "My bedroom is very hot inside during smog",
+    ]) {
+      const r = await worker.fetch(request("/api/chat", { question }), env);
+      assert.equal(r.status, 200);
+      const result = await r.json();
+      assert.equal(result.mode, "safety-guidance");
+      if (/hot/.test(question)) {
+        assert.match(result.answer, /cooler cleaner-air space/);
+        assert.doesNotMatch(result.answer, /box fan|sealed as possible/);
+      }
+    }
   } finally {
     globalThis.fetch = old;
   }

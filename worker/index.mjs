@@ -84,7 +84,7 @@ export default {
         let aqi = null,
           airObservation = null;
         if (
-          /chest pain|cannot breathe|can.t breathe|struggl.*breath|severe.*breath|blue lips|faint|unusually sleepy|dizz|generator|charcoal|overheat|too hot|very hot|medication|inhaler|dose|asthma attack/i.test(
+          /chest pain|cannot breathe|can.t breathe|struggl.*breath|severe.*breath|blue lips|faint|unusually sleepy|dizz|generator|charcoal|overheat|too hot|very hot|dangerous.*hot|hot inside|heatstroke|heat wave|medication|inhaler|dose|asthma attack/i.test(
             input.question,
           )
         )
