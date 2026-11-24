@@ -34,10 +34,11 @@ export const system = [
 ].join(" ");
 
 /** Server-authored coverage notes; the user's text selects topics, never policy. */
+/** @param {string} question @returns {{topic:string,facts:string,source:string}[]} */
 export function topicFacts(question) {
   const q = question.toLowerCase(),
     facts = [];
-  if (/cycl|commut|travel|sprint|outdoor|football/.test(q))
+  if (/cycl|commut|travel|sprint|outdoor|football/.test(q)) {
     facts.push({
       topic: "Safer travel",
       facts:
@@ -45,30 +46,34 @@ export function topicFacts(question) {
       source:
         "https://www.airnow.gov/publications/air-quality-index/air-quality-guide-for-particle-pollution/",
     });
-  if (/plant|hepa|purifier|air cleaner|filtrat/.test(q))
+  }
+  if (/plant|hepa|purifier|air cleaner|filtrat/.test(q)) {
     facts.push({
       topic: "Filtration",
       facts:
         "Houseplants are not a practical substitute for filtration. Reduce indoor sources. Size mechanical filtration/CADR for the room; prioritize a room where people spend time, keep airflow unobstructed, and follow manufacturer placement and operation instructions. Filtration does not remove all gases.",
       source: "https://www.epa.gov/wildfires/how-create-cleaner-air-room-home",
     });
-  if (/window|ventilat|6.*a.?m/.test(q))
+  }
+  if (/window|ventilat|6.*a.?m/.test(q)) {
     facts.push({
       topic: "Ventilation",
       facts:
         "No fixed clock time guarantees cleaner outdoor air. Use current local conditions. Avoid overheating and never obstruct required combustion ventilation.",
       source: "https://www.airnow.gov/wildfires/when-smoke-is-in-the-air/",
     });
+  }
   if (
     /sensor|model|open.meteo|cams|front door|street.level|data source/.test(q)
-  )
+  ) {
     facts.push({
       topic: "Data provenance",
       facts:
         "Breathe retrieves city-area outdoor CAMS atmospheric model estimates through Open-Meteo, not a household or doorstep sensor. Street and indoor conditions can differ. Use the supplied source timestamp and local official monitors for authoritative decisions.",
       source: "https://open-meteo.com/en/docs/air-quality-api",
     });
-  if (/co.?2|carbon|tailpipe|emission|kilomet|\bkm\b/.test(q))
+  }
+  if (/co.?2|carbon|tailpipe|emission|kilomet|\bkm\b/.test(q)) {
     facts.push({
       topic: "Impact",
       facts:
@@ -76,9 +81,10 @@ export function topicFacts(question) {
       source:
         "https://www.epa.gov/greenvehicles/greenhouse-gas-emissions-typical-passenger-vehicle",
     });
+  }
   if (
     /bedroom.*concentration|indoor.*(?:concentration|pm2|number|exact)/.test(q)
-  )
+  ) {
     facts.push({
       topic: "Indoor measurements",
       facts:
@@ -86,7 +92,8 @@ export function topicFacts(question) {
       source:
         "https://www.epa.gov/emergencies-iaq/wildfires-and-indoor-air-quality-iaq",
     });
-  if (/mask|n95|ffp2|respirator/.test(q))
+  }
+  if (/mask|n95|ffp2|respirator/.test(q)) {
     facts.push({
       topic: "Respirators",
       facts:
@@ -94,6 +101,7 @@ export function topicFacts(question) {
       source:
         "https://www.cdc.gov/niosh/ppe/php/community-respirators-masks/types-of-respirators-and-masks.html",
     });
+  }
   return facts;
 }
 

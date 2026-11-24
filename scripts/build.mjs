@@ -1,5 +1,4 @@
 import { readFile, mkdir, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
 import { build, transform } from "esbuild";
 // Source remains readable; only shipped browser assets are minified.
 const browser = await build({
@@ -10,16 +9,15 @@ const browser = await build({
   format: "esm",
   platform: "browser",
   target: "es2022",
-  plugins: [
-    {
-      name: "shared-guidance",
-      setup(builder) {
-        builder.onResolve({ filter: /^\/guidance\.js$/ }, () => ({
-          path: resolve("lib/guidance.mjs"),
-        }));
-      },
-    },
-  ],
+});
+const guidance = await build({
+  entryPoints: ["lib/guidance.mjs"],
+  bundle: true,
+  minify: true,
+  write: false,
+  format: "esm",
+  platform: "neutral",
+  target: "es2022",
 });
 const css = await transform(await readFile("web/style.css", "utf8"), {
   loader: "css",
@@ -40,12 +38,7 @@ export const staticAssets = {
   },
   "/style.css": { body: css.code, type: "text/css; charset=utf-8" },
   "/guidance.js": {
-    body: (
-      await transform(await readFile("lib/guidance.mjs", "utf8"), {
-        loader: "js",
-        minify: true,
-      })
-    ).code,
+    body: guidance.outputFiles[0].text,
     type: "text/javascript; charset=utf-8",
   },
 };
@@ -84,4 +77,10 @@ await writeFile(
 );
 console.log(
   "Built self-contained server and optimized browser assets; no runtime packages.",
+);
+
+// Type-check the source contract instead of rechecking generated bundle text.
+await writeFile(
+  "dist/server/index.d.ts",
+  'export { default } from "../../worker/index.mjs";\n',
 );

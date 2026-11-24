@@ -1,0 +1,24 @@
+{
+  "verified_on": "2026-11-24",
+  "scope": "Runtime refactor introduced by the commit containing this report; follow-up release reports identify the deployed revision.",
+  "checks": {
+    "eslint_errors": 0,
+    "eslint_warnings": 0,
+    "strict_checked_javascript_errors": 0,
+    "formatting": "passed",
+    "production_functions_measured": 206,
+    "maximum_cyclomatic_complexity": 15,
+    "complexity_limit": 15,
+    "maximum_nesting_limit": 4,
+    "maximum_parameters_limit": 4,
+    "application_lint_or_type_suppressions": 0,
+    "automated_tests_passed": 110,
+    "browser_checks_passed": 82,
+    "automated_accessibility_audits": 14,
+    "automated_accessibility_violations": 0,
+    "unchanged_golden_guidance_outputs": 30,
+    "unchanged_routine_combination_outputs": 120
+  },
+  "contracts": "Strict checked JavaScript covers shared domain modules, browser code, worker handlers/providers and the Vercel adapter. ESLint prevents browser/shared code from importing server implementations or Node APIs.",
+  "limits": "Complexity and static checks support maintainability; they do not guarantee a challenge score, complete security or GenAI factual accuracy."
+}

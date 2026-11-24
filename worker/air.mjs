@@ -1,76 +1,116 @@
-import { CITIES } from "./config.mjs";
+import { CITIES } from "../lib/locations.mjs";
+import { AIR_LIMITS } from "../lib/limits.mjs";
 import { parseProviderTime } from "../lib/time.mjs";
-export async function liveAir(city, env) {
-  const [latitude, longitude] = CITIES[city];
-  const url = new URL("https://air-quality-api.open-meteo.com/v1/air-quality");
-  url.search = new URLSearchParams({
-    latitude,
-    longitude,
-    current: "us_aqi,pm2_5,pm10,nitrogen_dioxide,ozone",
-    hourly: "us_aqi,pm2_5",
-    forecast_days: "2",
-    timezone: "auto",
-  });
-  const upstream = await fetch(url, {
-    signal: AbortSignal.timeout(15000),
-    headers: { Accept: "application/json" },
-  });
-  if (!upstream.ok) throw new Error("provider unavailable");
-  const raw = await upstream.json();
+import { isRecord } from "../lib/validation.mjs";
+/** @type {ReadonlyArray<"pm2_5" | "pm10" | "nitrogen_dioxide" | "ozone">} */
+const POLLUTANT_FIELDS = ["pm2_5", "pm10", "nitrogen_dioxide", "ozone"];
+/** @param {unknown} value @returns {value is number} */
+function validAqi(value) {
+  return (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    value >= 0 &&
+    value <= AIR_LIMITS.maxAqi
+  );
+}
+/** @param {unknown} raw */
+function currentConditions(raw) {
   if (
-    !raw.current ||
+    !isRecord(raw) ||
+    !isRecord(raw.current) ||
+    !validAqi(raw.current.us_aqi) ||
     typeof raw.current.time !== "string" ||
-    !/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(raw.current.time) ||
-    !Number.isFinite(raw.current.us_aqi) ||
-    raw.current.us_aqi < 0 ||
-    raw.current.us_aqi > 2000 ||
-    !Number.isFinite(raw.utc_offset_seconds) ||
-    typeof raw.timezone !== "string"
-  )
+    typeof raw.timezone !== "string" ||
+    typeof raw.utc_offset_seconds !== "number"
+  ) {
     throw new Error("invalid provider response");
+  }
   const modeledAt = parseProviderTime(raw.current.time, raw.utc_offset_seconds);
-  if (modeledAt === null) throw new Error("invalid provider timestamp");
-  const age = Date.now() - modeledAt;
-  const stale = age > 3 * 3600000 || age < -3600000;
+  if (modeledAt === null) {
+    throw new Error("invalid provider timestamp");
+  }
+  /** @type {import("../lib/types.d.ts").AirCurrent} */
   const current = {
     time: raw.current.time,
     us_aqi: Math.round(raw.current.us_aqi),
+    pm2_5: null,
+    pm10: null,
+    nitrogen_dioxide: null,
+    ozone: null,
   };
-  for (const key of ["pm2_5", "pm10", "nitrogen_dioxide", "ozone"])
+  for (const key of POLLUTANT_FIELDS) {
+    const value = raw.current[key];
     current[key] =
-      Number.isFinite(raw.current[key]) && raw.current[key] >= 0
-        ? raw.current[key]
+      typeof value === "number" && Number.isFinite(value) && value >= 0
+        ? value
         : null;
-  const hourly = { time: [], us_aqi: [] };
-  const hourlyValues = new Map();
-  if (Array.isArray(raw.hourly?.time) && Array.isArray(raw.hourly?.us_aqi)) {
-    raw.hourly.time.slice(0, 72).forEach((time, i) => {
-      const v = raw.hourly.us_aqi[i];
+  }
+  return {
+    current,
+    modeledAt,
+    timezone: raw.timezone.slice(0, 80),
+    utcOffsetSeconds: raw.utc_offset_seconds,
+  };
+}
+/** @param {unknown} raw @param {number} offset @returns {{time:string[],us_aqi:number[]}} */
+function forecastValues(raw, offset) {
+  /** @type {Map<string,number>} */
+  const values = new Map();
+  if (isRecord(raw) && Array.isArray(raw.time) && Array.isArray(raw.us_aqi)) {
+    const times = raw.time,
+      aqiValues = raw.us_aqi;
+    times.slice(0, AIR_LIMITS.forecastSamples).forEach((time, index) => {
+      const value = aqiValues[index];
       if (
         typeof time === "string" &&
-        parseProviderTime(time, raw.utc_offset_seconds) !== null &&
-        Number.isFinite(v) &&
-        v >= 0 &&
-        v <= 2000
+        parseProviderTime(time, offset) !== null &&
+        validAqi(value) &&
+        !values.has(time)
       ) {
-        if (!hourlyValues.has(time)) hourlyValues.set(time, Math.round(v));
+        values.set(time, Math.round(value));
       }
     });
   }
-  for (const [time, value] of [...hourlyValues].sort(([a], [b]) =>
+  /** @type {{time:string[],us_aqi:number[]}} */
+  const hourly = { time: [], us_aqi: [] };
+  for (const [time, value] of [...values].sort(([a], [b]) =>
     a.localeCompare(b),
   )) {
     hourly.time.push(time);
     hourly.us_aqi.push(value);
   }
+  return hourly;
+}
+/** @param {string} city @returns {Promise<import("../lib/types.d.ts").AirSnapshot>} */
+export async function liveAir(city) {
+  const [latitude, longitude] = CITIES[city];
+  const url = new URL("https://air-quality-api.open-meteo.com/v1/air-quality");
+  url.search = new URLSearchParams({
+    latitude: String(latitude),
+    longitude: String(longitude),
+    current: "us_aqi,pm2_5,pm10,nitrogen_dioxide,ozone",
+    hourly: "us_aqi,pm2_5",
+    forecast_days: "2",
+    timezone: "auto",
+  }).toString();
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(AIR_LIMITS.fetchTimeoutMs),
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error("provider unavailable");
+  }
+  const raw = await response.json();
+  const data = currentConditions(raw);
+  const age = Date.now() - data.modeledAt;
   return {
-    current,
-    hourly,
-    stale,
-    modeledAt: new Date(modeledAt).toISOString(),
+    current: data.current,
+    hourly: forecastValues(raw.hourly, data.utcOffsetSeconds),
+    stale: age > AIR_LIMITS.maxAgeMs || age < -AIR_LIMITS.futureToleranceMs,
+    modeledAt: new Date(data.modeledAt).toISOString(),
     fetchedAt: new Date().toISOString(),
-    timezone: raw.timezone.slice(0, 80),
-    utcOffsetSeconds: raw.utc_offset_seconds,
+    timezone: data.timezone,
+    utcOffsetSeconds: data.utcOffsetSeconds,
     place: "city-area estimate",
     source: "Open-Meteo / CAMS atmospheric models",
     latitude,

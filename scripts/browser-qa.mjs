@@ -1,4 +1,4 @@
-﻿import { readFile, writeFile, mkdir } from "node:fs/promises";
+﻿import { writeFile, mkdir } from "node:fs/promises";
 import axe from "axe-core";
 import { advancedScenarios } from "./browser-scenarios.mjs";
 const origin = process.env.BREATHE_QA_ORIGIN || "http://127.0.0.1:4180";
@@ -20,7 +20,9 @@ async function waitForBrowser() {
         signal: AbortSignal.timeout(1000),
       });
       if (response.ok) return await response.json();
-    } catch {}
+    } catch {
+      /* The dedicated browser may still be starting. */
+    }
     await new Promise((resolve) => setTimeout(resolve, 150));
   }
   throw new Error("Dedicated QA browser did not become ready");

@@ -1,4 +1,3 @@
-export { CITIES } from "../lib/guidance.mjs";
 export const HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",

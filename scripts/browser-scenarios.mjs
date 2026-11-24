@@ -17,7 +17,9 @@ export async function advancedScenarios({
     let clock;
     try {
       clock = sessionStorage.getItem("qa-clock");
-    } catch {}
+    } catch {
+      /* Browser storage is optional in synthetic fixtures. */
+    }
     if (clock) {
       const NativeDate = Date;
       window.__qaNow = NativeDate.parse(clock);

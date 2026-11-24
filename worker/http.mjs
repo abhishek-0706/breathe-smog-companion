@@ -1,4 +1,6 @@
+import { CHAT_LIMITS, RATE_LIMITS } from "../lib/limits.mjs";
 import { HEADERS } from "./config.mjs";
+/** @param {unknown} data @param {number} [status] @param {Record<string,string>} [extra] @returns {Response} */
 export function json(data, status = 200, extra = {}) {
   return new Response(JSON.stringify(data), {
     status,
@@ -11,23 +13,31 @@ export function json(data, status = 200, extra = {}) {
   });
 }
 const counts = new Map();
+/** @param {string} key @param {number} limit @returns {boolean} */
 export function rateAllowed(key, limit) {
   const now = Date.now(),
     entry = counts.get(key);
-  if (counts.size > 10000) {
-    for (const [k, v] of counts) if (v.until < now) counts.delete(k);
-    if (counts.size > 10000) return false;
+  if (counts.size > RATE_LIMITS.maxClients) {
+    for (const [k, v] of counts) {
+      if (v.until < now) {
+        counts.delete(k);
+      }
+    }
+    if (counts.size > RATE_LIMITS.maxClients) {
+      return false;
+    }
   }
   if (!entry || entry.until < now) {
-    counts.set(key, { count: 1, until: now + 60000 });
+    counts.set(key, { count: 1, until: now + RATE_LIMITS.windowMs });
     return true;
   }
   return ++entry.count <= limit;
 }
 
 /** Only trust client-address metadata supplied by the active hosting platform. */
+/** @param {import("../lib/types.d.ts").PlatformRequest} request @param {import("../lib/types.d.ts").Environment} [env] @returns {string} */
 export function clientIdentity(request, env = {}) {
-  if (env.VERCEL === "1")
+  if (env.VERCEL === "1") {
     return (
       "vercel:" +
       (
@@ -39,29 +49,39 @@ export function clientIdentity(request, env = {}) {
         .trim()
         .slice(0, 80)
     );
-  if (request.cf)
+  }
+  if (request.cf) {
     return (
       "cloudflare:" +
       (request.headers.get("CF-Connecting-IP") || "anonymous").slice(0, 80)
     );
+  }
   return "anonymous";
 }
 
 export class HttpError extends Error {
+  /** @param {number} status @param {string} message */
   constructor(status, message) {
     super(message);
     this.name = "HttpError";
     this.status = status;
   }
 }
+/** @param {Request} request @param {{maxBytes?:number,timeoutMs?:number}} [options] @returns {Promise<unknown>} */
 export async function readJsonBody(
   request,
-  { maxBytes = 16000, timeoutMs = 10000 } = {},
+  {
+    maxBytes = CHAT_LIMITS.bodyBytes,
+    timeoutMs = CHAT_LIMITS.bodyTimeoutMs,
+  } = {},
 ) {
-  if (Number(request.headers.get("content-length")) > maxBytes)
+  if (Number(request.headers.get("content-length")) > maxBytes) {
     throw new HttpError(413, "Request is too large.");
+  }
   const reader = request.body?.getReader();
-  if (!reader) throw new HttpError(400, "Invalid JSON.");
+  if (!reader) {
+    throw new HttpError(400, "Invalid JSON.");
+  }
   const cancel = () => {
     void reader.cancel().catch(() => {});
   };
@@ -79,9 +99,12 @@ export async function readJsonBody(
     try {
       while (true) {
         const part = await reader.read();
-        if (part.done) break;
-        if (!(part.value instanceof Uint8Array))
+        if (part.done) {
+          break;
+        }
+        if (!(part.value instanceof Uint8Array)) {
           throw new HttpError(400, "Invalid request body.");
+        }
         total += part.value.byteLength;
         if (total > maxBytes) {
           cancel();

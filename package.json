@@ -7,16 +7,23 @@
     "build": "node scripts/build.mjs",
     "start": "node scripts/serve.mjs",
     "test": "node --test --test-isolation=none tests/*.test.mjs",
-    "format": "prettier --write worker lib api scripts tests web package.json vercel.json .github/workflows/verify.yml",
-    "check:format": "prettier --check worker lib api scripts tests web package.json vercel.json .github/workflows/verify.yml",
-    "check": "npm run check:format && node scripts/check-source.mjs"
+    "format": "prettier --write worker lib api scripts tests web package.json vercel.json tsconfig.json eslint.config.mjs .prettierrc.json .github/workflows/verify.yml",
+    "check:format": "prettier --check worker lib api scripts tests web package.json vercel.json tsconfig.json eslint.config.mjs .prettierrc.json .github/workflows/verify.yml",
+    "check": "npm run build && npm run check:format && npm run lint && npm run check:types && node scripts/check-source.mjs",
+    "lint": "eslint . --max-warnings 0",
+    "check:types": "tsc --project tsconfig.json"
   },
   "engines": {
-    "node": ">=22"
+    "node": "24.x"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
     "axe-core": "4.14.1",
     "esbuild": "0.28.2",
-    "prettier": "3.10.1"
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
+    "prettier": "3.10.1",
+    "typescript": "7.0.2"
   }
 }

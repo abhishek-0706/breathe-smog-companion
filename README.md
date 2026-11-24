@@ -6,6 +6,7 @@ Breathe helps families and communities plan for severe winter smog and urban air
 - Public repository: https://github.com/abhishek-0706/breathe-smog-companion
 - Submission text: [SUBMISSION.txt](SUBMISSION.txt)
 - Verification evidence and limits: [VALIDATION.json](VALIDATION.json)
+- Code-quality verification: [reports/code-quality.json](reports/code-quality.json)
 - Rigorous release summary: [reports/rigorous-validation.json](reports/rigorous-validation.json)
 
 ## Run locally
@@ -49,18 +50,20 @@ The calculator uses EPA's illustrative U.S.-average gasoline tailpipe factor of 
 
 ## Maintainable source and build
 
-- `lib/guidance.mjs`: shared city registry, profile boundaries, AQI categories, freshness, routines, impact math and curated responses.
-- `lib/time.mjs`: city timezones, strict provider timestamps, local-day boundaries and future forecast selection.
-- `worker/index.mjs`: request routing and orchestration.
+- `lib/guidance.mjs`: stable public facade over small profile, AQI, routine, impact, safety and reference modules.
+- `lib/types.d.ts`, `lib/limits.mjs`, `lib/locations.mjs`: shared contracts, bounded resource settings and the single city/timezone registry.
+- `lib/time.mjs`: strict provider timestamps, local-day boundaries and forecast selection.
+- `worker/index.mjs` and `worker/handlers/`: route dispatch and focused air/chat handlers.
 - `worker/http.mjs`: sanitized responses, trusted-platform identity, best-effort throttling and timed byte-bounded JSON reads.
 - `worker/air.mjs`: allowlisted upstream fetches and normalized data.
-- `worker/providers.mjs`: provider contracts, model discovery, deadlines and transport failures.
-- `worker/chat.mjs` and `worker/policy.mjs`: bounded conversation, server-computed scenarios and source-backed topic facts.
-- `web/`: accessible browser UI and optional local storage.
+- `worker/providers/`: separate Gemini/OpenAI contracts, bounded model discovery and retry orchestration.
+- `worker/conversation.mjs` and `worker/policy.mjs`: bounded context, server-computed scenarios and source-backed topic facts.
+- `web/app.js`, `web/chat.js`, `web/views/`: application coordination, cancellable conversation state and readable HTML views.
+- `web/dom.js`, `web/storage.js`, `web/content.js`: validated DOM access, optional persistence and shared UI definitions.
 - `api/index.mjs`: allowlisted Vercel adapter.
-- `scripts/build.mjs`: esbuild bundles modules and optimizes browser assets; both hosts use identical assets. Build output never embeds runtime credentials.
+- `scripts/build.mjs`: dependency-free runtime bundles and optimized browser assets. A generated declaration bridge lets strict checks validate the Vercel adapter against the original worker contract. Build output never embeds runtime credentials.
 
-Source is formatted with pinned Prettier. `npm run check:format` enforces consistency; `npm run format` applies it. CI installs the exact lockfile without install scripts, checks formatting, builds, runs regressions, checks source size and excludes tracked secrets. Generated files and dependency directories are ignored.
+Pinned Prettier, ESLint and TypeScript check the source. `npm run check` builds, verifies formatting, enforces architecture boundaries and production function complexity at most 15, checks all browser/server/shared runtime source with strict checked JavaScript, and checks source size/known secret patterns. `npm run format` applies formatting. There are no inline lint or type-check suppressions in application source. CI installs the exact lockfile without install scripts, runs these checks and the regression suite, and rejects tracked environment secrets. Generated files and dependencies are ignored. Node 24 is pinned for development and deployment.
 
 ## Verify behavior honestly
 

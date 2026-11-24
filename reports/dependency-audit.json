@@ -12,9 +12,14 @@
   },
   "runtime_dependencies": [],
   "dev_tools": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
     "axe-core": "4.14.1",
     "esbuild": "0.28.2",
-    "prettier": "3.10.1"
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
+    "prettier": "3.10.1",
+    "typescript": "7.0.2"
   },
   "scope": "Known registry advisories for the pinned dependency graph; not a source security audit."
 }
