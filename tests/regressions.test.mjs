@@ -326,3 +326,50 @@ test("a chunked body cannot evade the byte limit", async () => {
     (error) => error.status === 413,
   );
 });
+
+test("AQI category definitions bypass the model and do not relabel city readings", async () => {
+  await withFetch(
+    () => assert.fail("Category definitions require no provider fetch"),
+    async () => {
+      const r = await worker.fetch(
+        question("What category is US AQI 200 versus 201?"),
+        { GEMINI_API_KEY: "dummy-test-key" },
+      );
+      assert.equal(r.status, 200);
+      const result = await r.json();
+      assert.equal(result.mode, "reference-guidance");
+      assert.match(result.answer, /151-200 is Unhealthy/);
+      assert.match(result.answer, /201-300 is Very unhealthy/);
+      assert.match(result.answer, /not a new reading/);
+      assert.match(result.answer, /airnow.gov/);
+    },
+  );
+});
+
+test("reported stale data and outages are not replaced with a reassuring inferred reading", async () => {
+  await withFetch(
+    () => assert.fail("Reported data problems require reference guidance"),
+    async () => {
+      for (const [text, expected] of [
+        [
+          "The last reading is from two days ago. Is it current?",
+          /not current/,
+        ],
+        [
+          "Air-quality fetch failed. Is it safe for my child to run outside?",
+          /unavailable/,
+        ],
+      ]) {
+        const r = await worker.fetch(question(text), {
+          GEMINI_API_KEY: "dummy-test-key",
+        });
+        const result = await r.json();
+        assert.equal(r.status, 200);
+        assert.equal(result.mode, "reference-guidance");
+        assert.match(result.answer, expected);
+        assert.match(result.answer, /official|authoritative/);
+        assert.doesNotMatch(result.answer, /currently \d|latest.*\d{2,3}/);
+      }
+    },
+  );
+});

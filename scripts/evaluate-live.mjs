@@ -109,7 +109,7 @@ report.complete =
   report.cases.every(
     (c) =>
       c.http_status === 200 &&
-      ["generative", "safety-guidance"].includes(c.mode),
+      ["generative", "safety-guidance", "reference-guidance"].includes(c.mode),
   );
 report.flags = report.cases
   .filter((c) => c.http_status !== 200)

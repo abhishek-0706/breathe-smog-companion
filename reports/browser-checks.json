@@ -17,5 +17,6 @@
   "automated_accessibility_violations": 0,
   "runtime_errors": 0,
   "manual_review_required": true,
-  "limits": "Automated axe checks are not exhaustive accessibility conformance. Some contrast checks need human review."
+  "limits": "Automated axe checks are not exhaustive accessibility conformance. Some contrast checks need human review.",
+  "source_commit": "dcff386836d3b0e2c9566f63424b756dd5879de3"
 }

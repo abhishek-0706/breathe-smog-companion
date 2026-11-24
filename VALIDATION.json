@@ -2,8 +2,8 @@
   "verified_on": "2026-11-24",
   "scope": "Local release source. Hosted CI and deployment evidence are revision-specific and recorded separately.",
   "automated_tests": {
-    "total": 86,
-    "passed": 86,
+    "total": 88,
+    "passed": 88,
     "command": "npm run build && npm test",
     "provider_calls": "Mocked; no live model-accuracy claim"
   },

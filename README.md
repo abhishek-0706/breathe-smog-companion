@@ -38,6 +38,8 @@ Set `GEMINI_API_KEY` as a Production secret in Vercel. The existing deployment's
 
 Optional OpenAI support uses `OPENAI_API_KEY` and `OPENAI_MODEL` only when Gemini is absent. It uses the Responses API with `store:false` and rejects incomplete responses. Gemini retention follows Google's provider policy; no blanket no-retention claim is made. User questions and bounded recent context go to the configured provider except for deterministic safety routes. Do not enter personal medical records.
 
+Fixed AQI category definitions and explanations of reported stale or unavailable data use labeled source-backed reference guidance rather than asking the model to invent a classification.
+
 ## Data and impact assumptions
 
 [Open-Meteo's air-quality API](https://open-meteo.com/en/docs/air-quality-api) uses CAMS atmospheric models. The app does not label all locations as the European ensemble. It shows U.S. AQI, which differs from India's CPCB index. Model timestamps older than three hours, materially future timestamps, malformed responses and failed requests never become a fabricated zero or a Good reading. The browser also expires an aged reading and refreshes public data when active. Check local authorities for official advisories. The provider's free endpoint is for noncommercial use under its limits; check current terms for another deployment or commercial use.

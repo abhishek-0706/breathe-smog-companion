@@ -8,7 +8,7 @@ The server fetches allowlisted modeled air data itself and ignores client-suppli
 
 ## Verification scope
 
-The 24 November 2026 local release check passes 86 automated tests covering sourced synthetic scenarios, provider contracts, request limits, spoofed headers, stalled streams, stale data, secret non-disclosure, storage and the hosting adapter. Mock provider tests verify behavior, not live model quality. The pinned development dependency audit reports no known advisories; this is not a source-code security guarantee.
+The 24 November 2026 local release check passes 88 automated tests covering sourced synthetic scenarios, provider contracts, request limits, spoofed headers, stalled streams, stale data, secret non-disclosure, storage and the hosting adapter. Mock provider tests verify behavior, not live model quality. The pinned development dependency audit reports no known advisories; this is not a source-code security guarantee.
 
 GitHub CodeQL evidence is recorded in [reports/security-scan.json](reports/security-scan.json), with the exact analyzed commit and workflow link. A scan applies to that revision; local changes require a fresh CI scan. CodeQL and dependency audits are distinct from Codex Security. No completed Codex Security assessment is claimed. Raw diagnostic runs are kept outside this checkout.
 

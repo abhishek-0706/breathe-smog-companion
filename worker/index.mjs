@@ -1,5 +1,9 @@
 import { assets } from "./assets.mjs";
-import { normalizeProfile, guidedReply } from "../lib/guidance.mjs";
+import {
+  normalizeProfile,
+  guidedReply,
+  referenceReply,
+} from "../lib/guidance.mjs";
 import { CITIES, HEADERS } from "./config.mjs";
 import {
   json,
@@ -91,6 +95,13 @@ export default {
           return json({
             answer: guidedReply(input.question, profile, aqi),
             mode: "safety-guidance",
+          });
+        const reference = referenceReply(input.question);
+        if (reference)
+          return json({
+            answer: reference,
+            mode: "reference-guidance",
+            basis: "curated-public-health",
           });
         if (
           /\b(asthma|copd|heart disease|lung disease|pregnan\w*)\b/i.test(

@@ -333,10 +333,16 @@ async function ask(text) {
       $("#assistant-mode").textContent =
         result.mode === "generative"
           ? "Generative AI - " + aiProvider
-          : "Safety guidance";
+          : result.mode === "reference-guidance"
+            ? "Reference guidance"
+            : "Safety guidance";
       bot.textContent =
         answer +
-        (result.mode === "safety-guidance" ? "\n\nSafety guidance" : "");
+        (result.mode === "safety-guidance"
+          ? "\n\nSafety guidance"
+          : result.mode === "reference-guidance"
+            ? "\n\nReference guidance"
+            : "");
       history.push(
         { role: "user", content: text },
         { role: "assistant", content: answer },
