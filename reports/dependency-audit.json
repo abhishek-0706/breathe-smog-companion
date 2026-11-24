@@ -1,6 +1,6 @@
 {
   "checked_on": "2026-11-24",
-  "command": "npm audit --json --audit-level=high",
+  "command": "npm audit --json",
   "exit_code": 0,
   "vulnerabilities": {
     "info": 0,

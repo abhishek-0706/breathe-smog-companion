@@ -5,11 +5,27 @@ const origin = process.env.BREATHE_QA_ORIGIN || "http://127.0.0.1:4180";
 const debugPort = Number(process.env.BREATHE_DEBUG_PORT || 9341);
 if (new URL(origin).hostname !== "127.0.0.1")
   throw Error("Use an isolated local preview for mocked browser QA.");
-const tabs = await (
-  await fetch("http://127.0.0.1:" + debugPort + "/json", {
-    signal: AbortSignal.timeout(10000),
-  })
-).json();
+const checkedOn = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Kolkata",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+}).format(new Date());
+const reportDirectory = "../Private_Validation/rigorous-" + checkedOn;
+async function waitForBrowser() {
+  const deadline = Date.now() + 15000;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch("http://127.0.0.1:" + debugPort + "/json", {
+        signal: AbortSignal.timeout(1000),
+      });
+      if (response.ok) return await response.json();
+    } catch {}
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  throw new Error("Dedicated QA browser did not become ready");
+}
+const tabs = await waitForBrowser();
 const tab = tabs.find((t) => t.type === "page");
 if (!tab) throw Error("Dedicated QA browser tab unavailable");
 const ws = new WebSocket(tab.webSocketDebuggerUrl);
@@ -21,7 +37,7 @@ let sequence = 0;
 const pending = new Map(),
   runtimeErrors = [];
 const report = {
-  checkedOn: "2026-11-24",
+  checkedOn,
   origin,
   browser: "Microsoft Edge headless",
   fixture:
@@ -336,9 +352,9 @@ try {
     report.checks.every((c) => c.pass) &&
     report.accessibility.every((a) => a.violations.length === 0) &&
     runtimeErrors.length === 0;
-  await mkdir("../Private_Validation/rigorous-2026-11-24", { recursive: true });
+  await mkdir(reportDirectory, { recursive: true });
   await writeFile(
-    "../Private_Validation/rigorous-2026-11-24/browser-accessibility.json",
+    reportDirectory + "/browser-accessibility.json",
     JSON.stringify(report, null, 2) + "\n",
   );
   console.log(

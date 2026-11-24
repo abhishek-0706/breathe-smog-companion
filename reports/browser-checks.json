@@ -1,22 +1,35 @@
 {
   "verified_on": "2026-11-24",
+  "source_commit": "6f8fd69d0964d62e4bf428129f8e8b515888110b",
   "browser": "Microsoft Edge headless",
-  "scope": "Synthetic deterministic air data and guided mode; not a live-provider or model-accuracy test.",
-  "workflow_checks_passed": 20,
-  "audited_views": [
-    "overview",
-    "information-dialog",
-    "household-dialog",
-    "routines",
-    "indoor",
-    "impact",
-    "community",
-    "privacy-dialog",
-    "mobile-overview"
+  "fixture_kind": "Synthetic deterministic air data and guided mode; not a live-provider or model-accuracy test.",
+  "workflow_checks_passed": 82,
+  "viewports_px": [
+    320,
+    360,
+    390,
+    768,
+    1024,
+    1440,
+    2560
   ],
+  "layout_scenarios": 35,
+  "automated_accessibility_audits": 14,
   "automated_accessibility_violations": 0,
-  "runtime_errors": 0,
+  "runtime_exceptions": 0,
+  "coverage": [
+    "Named dialogs and keyboard focus",
+    "Profile persistence and daily check-ins",
+    "Local-midnight rollover and location timezones",
+    "AI error, timeout and malformed-output recovery",
+    "Late-reply cancellation after privacy or profile reset",
+    "Out-of-order city requests",
+    "Blocked and corrupted storage",
+    "Safe provider-text rendering",
+    "Long-answer reflow",
+    "Community-note download content",
+    "Reduced motion"
+  ],
   "manual_review_required": true,
-  "limits": "Automated axe checks are not exhaustive accessibility conformance. Some contrast checks need human review.",
-  "source_commit": "dcff386836d3b0e2c9566f63424b756dd5879de3"
+  "limits": "Automated checks in Edge on Windows with emulated viewports; not exhaustive WCAG or cross-browser certification."
 }

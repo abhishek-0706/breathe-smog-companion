@@ -1,13 +1,13 @@
 {
   "verified_on": "2026-11-24",
-  "scope": "Local release source. Hosted CI and deployment evidence are revision-specific and recorded separately.",
+  "scope": "Rigorous release validation. Reports identify the exact source revision and distinguish automated, live, and lab evidence.",
   "automated_tests": {
-    "total": 88,
-    "passed": 88,
+    "total": 110,
+    "passed": 110,
     "command": "npm run build && npm test",
     "provider_calls": "Mocked; no live model-accuracy claim",
-    "ci_source_commit": "4ce12d330477425ea16b3606e9730e86c32f3fc3",
-    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45316275242"
+    "ci_source_commit": "6f8fd69d0964d62e4bf428129f8e8b515888110b",
+    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45336456016"
   },
   "golden_dataset": {
     "cases": 30,
@@ -39,14 +39,25 @@
     "application": "https://breathe-smog-companion.vercel.app"
   },
   "browser_checks": {
-    "passed": 20,
-    "audits": 9,
+    "passed": 82,
+    "audits": 14,
     "automated_violations": 0,
     "report": "reports/browser-checks.json"
   },
   "production_checks": {
     "report": "reports/production-checks.json",
-    "response_checks_passed": 6,
-    "runtime_source_commit": "36f994291531f5b59eda5f26838a495a724c81da"
-  }
+    "checks_passed": 30,
+    "runtime_source_commit": "6f8fd69d0964d62e4bf428129f8e8b515888110b"
+  },
+  "lighthouse": {
+    "report": "reports/lighthouse-summary.json",
+    "scores": {
+      "performance": 100,
+      "accessibility": 100,
+      "best_practices": 100,
+      "seo": 100
+    },
+    "scope": "One emulated-mobile lab run; challenge evaluation is separate."
+  },
+  "rigorous_report": "reports/rigorous-validation.json"
 }

@@ -1,0 +1,35 @@
+{
+  "verified_on": "2026-11-24",
+  "runtime_source_commit": "6f8fd69d0964d62e4bf428129f8e8b515888110b",
+  "automated_tests": {
+    "passed": 110,
+    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45336456016",
+    "environments": [
+      "Windows / Node 24",
+      "GitHub Ubuntu 24.04 / Node 24"
+    ],
+    "additional_inputs_inside_tests": {
+      "json_profile_combinations": 102,
+      "seeded_carbon_scenarios": 1000,
+      "simultaneous_local_requests": 75,
+      "allowed_concurrent_chat_requests": 8,
+      "rate_limited_requests": 67
+    },
+    "limits": "Input scenarios are exercised inside named tests, not counted as additional independent tests. Provider contracts are mocked."
+  },
+  "browser_report": "reports/browser-checks.json",
+  "production_report": "reports/production-checks.json",
+  "lighthouse_report": "reports/lighthouse-summary.json",
+  "security_report": "reports/security-scan.json",
+  "dependency_report": "reports/dependency-audit.json",
+  "golden_live_run": {
+    "source_commit": "b33980576bb6a3fe705359927fd6381b45586982",
+    "http_responses_completed": 30,
+    "generative_responses": 18,
+    "curated_safety_responses": 8,
+    "curated_reference_responses": 4,
+    "scope": "One live response per researched scenario, followed by assistant review. Transport completion is separate from semantic accuracy. Subsequent pediatric safety routing was rechecked on the final release."
+  },
+  "model_quality_limits": "Generated answers can omit relevant details or make overbroad claims. No full semantic or clinical accuracy certification is claimed.",
+  "diagnostics": "Raw runs and detailed review notes are maintained outside the repository."
+}

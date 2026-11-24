@@ -6,6 +6,7 @@ Breathe helps families and communities plan for severe winter smog and urban air
 - Public repository: https://github.com/abhishek-0706/breathe-smog-companion
 - Submission text: [SUBMISSION.txt](SUBMISSION.txt)
 - Verification evidence and limits: [VALIDATION.json](VALIDATION.json)
+- Rigorous release summary: [reports/rigorous-validation.json](reports/rigorous-validation.json)
 
 ## Run locally
 
@@ -49,6 +50,7 @@ The calculator uses EPA's illustrative U.S.-average gasoline tailpipe factor of 
 ## Maintainable source and build
 
 - `lib/guidance.mjs`: shared city registry, profile boundaries, AQI categories, freshness, routines, impact math and curated responses.
+- `lib/time.mjs`: city timezones, strict provider timestamps, local-day boundaries and future forecast selection.
 - `worker/index.mjs`: request routing and orchestration.
 - `worker/http.mjs`: sanitized responses, trusted-platform identity, best-effort throttling and timed byte-bounded JSON reads.
 - `worker/air.mjs`: allowlisted upstream fetches and normalized data.
@@ -68,8 +70,12 @@ Source is formatted with pinned Prettier. `npm run check:format` enforces consis
 
 `node scripts/evaluate-live.mjs --all` calls the real public app for all 30 scenarios at a bounded cadence. It reads no credentials and stops on a failed request. The app fetches actual current modeled AQI instead of accepting dataset AQI as a trusted reading, so some scenario values are hypothetical. HTTP 200 alone is not factual accuracy: review every answer against expected/forbidden assertions and sources, distinguishing actual generations from curated safety responses. Raw run artifacts stay outside this checkout in the adjacent `Private_Validation` folder; only reviewed successful summaries are published.
 
+The 24 November 2026 release passed **110 automated tests**, **82 browser checks** across seven viewport widths, **14 automated accessibility audits** with no violations, and **30 final production smoke checks**. All nine supported locations returned real modeled data; deployed assets matched the tested build. A Lighthouse 13.6.0 emulated-mobile lab run scored 100 for performance, accessibility, best practices and SEO. This is a single lab snapshot with a host CPU calibration warning, separate from field performance, WCAG certification or the challenge score. See the revision-specific reports above.
+
+Checklists follow the selected city's local calendar day and reset in an open tab. Browser storage can be blocked or corrupt without breaking the app; session-only changes are labeled. Clearing preferences also clears the visible conversation and prevents a late response from restoring old context. Household changes start a fresh conversation. Shared browser/server safety rules cover urgent symptoms, combustion hazards, heat, medication and pediatric respirator fit. Fixed reference responses and generated answers are labeled separately.
+
 ## Security and submission limits
 
 Read [SECURITY.md](SECURITY.md). The public MVP uses no accounts, database, cookies or third-party browser analytics. Household data stays in browser storage; chat context stays in tab memory. Runtime secrets stay server-side. Throttling trusts only the active host's client metadata. In-memory limits are best effort per server instance; use provider spending controls and a durable shared quota for a high-traffic paid deployment. Origin checks are not account authentication.
 
-GitHub CodeQL and dependency audit evidence is recorded separately from Codex Security. A scanner's completion or zero findings does not establish absence of vulnerabilities. Challenge evaluation scores are determined by the platform and are not guaranteed by these checks. Submission still needs an accepted-host demo URL. LinkedIn remains skipped at the owner's request, despite the supplied form marking it mandatory.
+GitHub CodeQL and dependency audit evidence is recorded separately from Codex Security. A scanner's completion or zero findings does not establish absence of vulnerabilities. Challenge evaluation scores are determined by the platform and are not guaranteed by these checks.
