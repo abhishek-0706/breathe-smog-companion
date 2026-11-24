@@ -341,7 +341,11 @@ test("AQI category definitions bypass the model and do not relabel city readings
       assert.match(result.answer, /151-200 is Unhealthy/);
       assert.match(result.answer, /201-300 is Very unhealthy/);
       assert.match(result.answer, /not a new reading/);
-      assert.match(result.answer, /airnow.gov/);
+      assert.ok(
+        result.answer.includes(
+          "Source: https://www.airnow.gov/aqi/aqi-basics/",
+        ),
+      );
     },
   );
 });
