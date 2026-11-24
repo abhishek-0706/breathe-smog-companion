@@ -1,6 +1,11 @@
-import './build.mjs';
-import {mkdir,copyFile} from 'node:fs/promises';
-await mkdir('public',{recursive:true});
-for(const name of ['index.html','app.js','style.css'])await copyFile('web/'+name,'public/'+name);
-await copyFile('lib/guidance.mjs','public/guidance.js');
-console.log('Prepared Vercel static assets and shared API function.');
+import { staticAssets } from "./build.mjs";
+import { mkdir, writeFile } from "node:fs/promises";
+await mkdir("public", { recursive: true });
+for (const [route, asset] of Object.entries(staticAssets))
+  await writeFile(
+    "public/" + (route === "/" ? "index.html" : route.slice(1)),
+    asset.body,
+  );
+console.log(
+  "Prepared the same optimized assets for Vercel and Worker hosting.",
+);

@@ -1,48 +1,491 @@
-import {category, normalizeProfile, routines, avoidedCarbon, guidedReply} from '/guidance.js';
-const $=s=>document.querySelector(s);
-const icons={dashboard:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',leaf:'<path d="M20 4C9 2 3 8 6 15s16 4 14-11Z"/><path d="m4 21 11-12m-5 5v-4m0 4h5"/>',home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M9 21v-8h6v8M7 9h.01M17 9h.01"/>',community:'<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m2-16a3 3 0 0 1 0 6m1 3a5 5 0 0 1 3 5v2"/>',chart:'<path d="M4 3v18h17M8 16v-4m5 4V8m5 8V4"/>',train:'<rect x="5" y="3" width="14" height="16" rx="4"/><path d="M5 10h14M9 3v7m6-7v7M8 22l2-3m6 3-2-3M8 15h.01M16 15h.01"/>'};
-function icon(name){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(icons[name]||icons.leaf)+'</svg>'}
-function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
-function save(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch{toast('Browser storage is unavailable. Changes last until you leave.')}}
-let profile=normalizeProfile(read('breathe-profile',{budget:'No-cost first'})), view='overview', air=null, airError='', busy=true, aiEnabled=false, aiProvider='', requestId=0;
-const today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'});
-let completed=read('breathe-actions-'+today,[]);if(!Array.isArray(completed))completed=[];
-let pledges=read('breathe-pledges',[]);if(!Array.isArray(pledges))pledges=[];
-let history=[];
-const nav=[['overview','dashboard','Overview'],['routines','leaf','My routines'],['indoor','home','Indoor air'],['community','community','Community'],['impact','chart','My impact']];
-$('#navigation').innerHTML=nav.map(([id,i,label])=>`<button class="nav-button ${id==='overview'?'active':''}" data-view="${id}" ${id==='overview'?'aria-current="page"':''}>${icon(i)}${label}</button>`).join('');
-function setView(next){view=next;document.querySelectorAll('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===view);if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});render()}
-function date(){return new Intl.DateTimeFormat('en',{day:'numeric',month:'long',weekday:'short',timeZone:'Asia/Kolkata'}).format(new Date())}
-function currentAqi(){return air&&!air.stale?air.current.us_aqi:null}
-function heroArt(){return `<svg class="landscape" viewBox="0 0 300 280" fill="none" aria-hidden="true"><circle cx="204" cy="103" r="83" stroke="#cedcc0"/><circle cx="204" cy="103" r="66" stroke="#d4e0c8"/><circle cx="204" cy="103" r="47" fill="#f1f2cc"/><path d="M0 245c65-50 108-35 160-59s97-1 150 24v80H0Z" fill="#c4d6ad"/><path d="M76 280v-92h38v-32h22v124m-64 0v-66H44v66" fill="#a2b991"/><path d="M152 280V134h39v146" fill="#b0c49e"/><path d="M157 134h29v-9h-29m48 155V171h42v109" fill="#91ab80"/><path d="M216 171v-12h20v12" fill="#91ab80"/><path d="M110 281v-39h42v39" fill="#d9e2c4"/><path d="M0 278c52-24 106-15 155-22s110-22 145-1v25H0" fill="#7e9c6f"/><path d="M263 264v-68" stroke="#587550" stroke-width="3"/><ellipse cx="264" cy="199" rx="25" ry="39" fill="#759965"/><path d="M37 267v-64" stroke="#6b895c" stroke-width="3"/><ellipse cx="37" cy="201" rx="18" ry="29" fill="#8aa776"/><path d="M165 151v8m10-8v8m-10 9v8m10-8v8m-10 9v8m10-8v8M86 200v7m12-7v7m-12 9v7m12-7v7M218 186v8m13-8v8m-13 9v8m13-8v8" stroke="#e2e9d3" stroke-width="4"/><path d="m102 88 6-3 7 3m4-18 7-3 7 3" stroke="#9caf8d" stroke-width="2" stroke-linecap="round"/></svg>`}
-function heading(title,sub){return `<div class="greeting-line"><span class="eyebrow">A LITTLE MORE MINDFUL, EVERY DAY</span><span class="date">${date()}</span></div><h1>${title}</h1><p class="page-subtitle">${sub}</p>`}
-function airCard(){
- const aqi=currentAqi(), c=category(aqi);const available=Number.isFinite(aqi); const label=busy?'Fetching live forecast':available?'Latest modeled data':air?.stale?'Stale data · not current':'Data unavailable';
- return `<section class="card air-card" aria-label="Outdoor air quality"><div class="card-top"><h2>The air around you</h2><span class="live-tag">${label}</span></div>${busy&&!air?'<p class="loading">Connecting to Open-Meteo for your city…</p>':`<div class="air-middle"><div><span class="aqi-number">${available?Math.round(aqi):'—'}</span><span class="aqi-caption">U.S. AQI · MODELED</span></div><div class="aqi-description"><span class="status-pill ${c.tone}">${escapeHTML(c.label)}</span><p>${available?(aqi>150?'A good day to take extra care. Choose cleaner indoor air and limit outdoor exertion.':aqi>100?'Sensitive household members should reduce prolonged or heavy outdoor activity.':aqi>50?'Most people can follow their plans. Take care if you are unusually sensitive.':'A little fresh-air time may fit today. Check local advisories before heading out.'):'We couldn’t confirm current conditions. Check your local air-quality authority before outdoor plans.'}</p></div></div>${available?`<div class="air-scale"><span class="air-tick" style="left:${Math.min(99,aqi/5)}%"></span></div><div class="scale-labels"><span>Good</span><span>Moderate</span><span>Unhealthy</span><span>Hazardous</span></div>`:''}${airError?`<div class="error-panel">${escapeHTML(airError)}</div>`:''}`}
- <div class="air-foot"><span>${escapeHTML(profile.city)}${air?' · '+escapeHTML(air.place):''}<br>${air?'Model time: '+escapeHTML(air.current.time.replace('T',' '))+' '+escapeHTML(air.timezone):'No sample readings are shown.'}</span><button id="refresh-air" class="refresh" ${busy?'disabled':''}>↻ Refresh</button></div><div class="science data-note">Open-Meteo / CAMS · Outdoor model estimate, not a sensor reading.<br>U.S. AQI differs from India’s CPCB AQI. <button class="text-button" data-info="data">About this data</button></div></section>`;
+import {
+  CITIES,
+  category,
+  isCurrentAir,
+  normalizeProfile,
+  routines,
+  avoidedCarbon,
+  guidedReply,
+} from "/guidance.js";
+import { readSaved, writeSaved, clearSaved } from "./storage.js";
+const $ = (s) => document.querySelector(s);
+$("#city").replaceChildren(
+  ...Object.keys(CITIES).map((city) => {
+    const option = document.createElement("option");
+    option.value = city;
+    option.textContent = city;
+    return option;
+  }),
+);
+const icons = {
+  dashboard:
+    '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  leaf: '<path d="M20 4C9 2 3 8 6 15s16 4 14-11Z"/><path d="m4 21 11-12m-5 5v-4m0 4h5"/>',
+  home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M9 21v-8h6v8M7 9h.01M17 9h.01"/>',
+  community:
+    '<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m2-16a3 3 0 0 1 0 6m1 3a5 5 0 0 1 3 5v2"/>',
+  chart: '<path d="M4 3v18h17M8 16v-4m5 4V8m5 8V4"/>',
+  train:
+    '<rect x="5" y="3" width="14" height="16" rx="4"/><path d="M5 10h14M9 3v7m6-7v7M8 22l2-3m6 3-2-3M8 15h.01M16 15h.01"/>',
+};
+function icon(name) {
+  return (
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    (icons[name] || icons.leaf) +
+    "</svg>"
+  );
 }
-function routineCards(){return `<div class="routines">${routines(profile,currentAqi()).map(r=>`<article class="card routine-card"><div class="routine-icon">${icon(r.icon)}</div><div class="routine-time">${r.time}</div><h3>${r.title}</h3><p>${r.body}</p><span class="routine-tag">${r.tag}</span><div class="routine-bottom"><button class="impact-explain" data-impact="${r.id}">Why it makes a difference</button><button class="done" data-done="${r.id}" aria-label="${completed.includes(r.id)?'Undo':'Mark complete'}: ${r.title}" aria-pressed="${completed.includes(r.id)}">${completed.includes(r.id)?'✓':'+'}</button></div></article>`).join('')}</div>`}
-function forecast(){if(!air?.hourly)return ''; const points=air.hourly.time.map((time,i)=>({time,value:air.hourly.us_aqi[i]})).filter(x=>Number.isFinite(x.value)&&new Date(x.time+'Z').getTime()>=new Date(air.current.time+'Z').getTime()).filter((_,i)=>i%3===0).slice(0,8);if(!points.length)return '';const max=Math.max(...points.map(p=>p.value),1);return `<section class="card wide-card"><div class="section-line"><h2>The next 24 hours</h2><span class="data-note">Forecast · U.S. AQI</span></div><div class="forecast">${points.map(p=>`<div class="forecast-col"><span class="forecast-value">${Math.round(p.value)}</span><div class="bar" style="height:${p.value/max*95}px"></div><span>${p.time.slice(11,16)}</span></div>`).join('')}</div><p class="data-note">Local time in ${escapeHTML(air.timezone)}. A lower forecast is not a guarantee of safe conditions; check local alerts.</p></section>`}
-function render(){
- $('#city-label').textContent=profile.city;$('#household-caption').textContent=profile.sensitive?'Extra care at home':profile.commute;
- let html='';
- if(view==='overview') html=heading('A better day starts with a breath.','A few thoughtful choices. A healthier home. A little less impact on the air we share.')+`<section class="hero"><div class="hero-copy"><span class="eyebrow">YOUR AIR. YOUR EVERYDAY.</span><h2>Small steps today.<br>A clearer tomorrow.</h2><p>Your clean-air plan, shaped around your city, your household, and the way you live.</p><button class="primary" id="personalize">${icon('leaf')} Make it personal</button></div>${heroArt()}</section>`+airCard()+`<div class="section-line"><h2>Your little steps for today</h2><button class="mini-link" data-view-go="routines">View my routine</button></div>`+routineCards()+`<section class="impact-strip"><div class="routine-icon">${icon('leaf')}</div><div><h3>Good for you. Better together.</h3><p>${completed.length} of 3 daily actions complete. Every considered choice counts.</p></div><button class="mini-link" data-view-go="impact">See your impact</button></section>`;
- if(view==='routines') html=heading('A little rhythm. A lighter footprint.','Your plan adapts to your household and the latest available outdoor air estimate.')+`<div class="card wide-card"><span class="eyebrow">YOUR DAILY CHECK-IN</span><h2>${completed.length} of 3 small steps complete</h2><p>Take the actions that work for you. Your checklist resets each day.</p><div class="progress"><span style="width:${completed.length/3*100}%"></span></div></div>`+routineCards()+forecast()+`<button class="secondary" id="personalize">Adjust my household preferences</button>`;
- if(view==='indoor') html=heading('Make home your breathing space.','Practical ways to reduce indoor particle sources, with or without an air cleaner.')+`<div class="card wide-card"><span class="eyebrow">START WITH WHAT YOU HAVE</span><h2>${profile.purifier?'Make your air cleaner work well.':'Cleaner air can begin with a few free changes.'}</h2><p>${profile.purifier?'Use a correctly sized mechanical HEPA cleaner continuously in your main room. Keep airflow clear, maintain filters, and avoid ozone-producing devices.':'Avoid incense, candles, smoking and dry sweeping indoors. Damp-dust and mop instead. Plants and bowls of water do not replace filtration.'}</p><span class="status-pill good">${profile.budget==='No-cost first'?'Your preference: no-cost first':'Your preference: flexible budget'}</span></div><div class="detail-grid"><article class="card wide-card"><div class="routine-icon">${icon('home')}</div><h3>Windows need context.</h3><p>When outdoor particle pollution is high, close windows if safe. Air out the home when outdoor conditions improve, rather than at a fixed hour.</p><p class="data-note">Never block required ventilation or allow unsafe heat. Particle filters don’t remove CO₂ or all gases.</p></article><article class="card wide-card"><div class="routine-icon">${icon('leaf')}</div><h3>Keep the kitchen lighter.</h3><p>Steam or boil instead of frying. Use an exhaust fan that vents outside. Never use charcoal grills or generators indoors.</p><p class="data-note">Less indoor smoke means fewer new particles. A good routine cannot guarantee a pollutant percentage.</p></article></div><article class="card wide-card"><h3>Know when to get help.</h3><p>If anyone has severe breathing difficulty, chest pain, blue lips or fainting, seek local emergency medical help. Follow clinician-provided care plans; this app does not recommend medication changes.</p><button class="mini-link" data-info="sources">Read the guidance behind these steps</button></article>`;
- if(view==='community') html=heading('Better air is a shared effort.','Start with your home. Bring a little care to your neighbourhood.')+`<section class="hero"><div class="hero-copy"><span class="eyebrow">A NEIGHBOURHOOD OF SMALL ACTIONS</span><h2>One street.<br>Many little changes.</h2><p>Choose a pledge and download a conversation starter to share with your community.</p><button class="primary" id="download-pledge">Download a neighbourhood note</button></div>${heroArt()}</section><section class="card wide-card"><h2>Our cleaner-air commitments</h2><p>These are your personal pledges, saved on this browser.</p>${[['idling','Keep school gates idle-free','Switch off engines while waiting, where safe.'],['burning','Keep leaves and waste out of the fire','Use local collection or appropriate composting.'],['neighbour','Check in on a neighbour','Share verified alerts and offer help with essential errands.']].map(([id,title,text])=>`<label class="pledge"><input type="checkbox" data-pledge="${id}" ${pledges.includes(id)?'checked':''}><span>${title}<small class="data-note" style="display:block">${text}</small></span></label>`).join('')}</section><div class="card wide-card"><h3>Share useful information, gently.</h3><p>Use current local advisories. Never share a neighbour’s health details without consent. Community actions can reduce emission sources; a numerical neighbourhood AQI improvement cannot be promised.</p></div>`;
- if(view==='impact') html=heading('See the difference in your choices.','Understand the direction of your impact, with the assumptions in plain sight.')+`<div class="detail-grid"><div class="card wide-card"><span class="eyebrow">YOUR DAILY PROGRESS</span><div class="metric">${completed.length}<span style="font:16px 'Segoe UI'"> / 3</span></div><p>Thoughtful actions completed today.</p><div class="progress"><span style="width:${completed.length/3*100}%"></span></div></div><div class="card wide-card"><span class="eyebrow">COMMUNITY STARTS WITH YOU</span><div class="metric">${pledges.length}</div><p>Personal clean-air commitments.</p></div></div><section class="card wide-card"><span class="eyebrow">EXPLORE A NO-DRIVE DAY</span><h2>What if you skipped one solo car trip?</h2><label for="km-range">Daily gasoline driving avoided: <strong id="km-label">${profile.distance}</strong> km</label><input class="slider" id="km-range" type="range" min="0" max="100" value="${profile.distance}"><div class="metric"><span id="carbon-number">${avoidedCarbon(profile.distance).toFixed(1)}</span> <span style="font:18px 'Segoe UI'">kg CO₂</span></div><p>Estimated tailpipe emissions avoided on a no-drive day.</p><p class="data-note">Calculation: distance × 0.4 kg per mile ÷ 1.609344 km per mile. EPA U.S.-average gasoline vehicle proxy, not an India-specific fleet estimate. Actual emissions vary. Excludes lifecycle emissions, replacement travel and public-transit emissions. This is a scenario, not a measured saving.</p><p class="data-note">CO₂ is a climate pollutant. This estimate does not predict PM₂.₅ exposure, health improvement or a change in local AQI.</p><button class="mini-link" data-info="carbon">Read the calculation & source</button></section>`;
- $('#page').innerHTML=html;
+function escapeHTML(s) {
+  return String(s).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
 }
-function toast(text){$('#toast').textContent=text;$('#toast').classList.add('visible');setTimeout(()=>$('#toast').classList.remove('visible'),3500)}
-function openProfile(){for(const key of ['city','commute','distance','budget'])$('#'+key).value=profile[key];for(const key of ['sensitive','purifier'])$('#'+key).checked=profile[key];$('#profile-dialog').showModal()}
-const sources=`<h2>Grounded in better information.</h2><p>Our guidance draws on public-health and environmental sources. It supports everyday decisions and does not replace local alerts or medical care.</p><ul class="sources-list"><li><a href="https://www.epa.gov/wildfires/indoor-air-filtration" target="_blank" rel="noopener noreferrer">EPA: indoor air filtration</a></li><li><a href="https://www.airnow.gov/wildfires/when-smoke-is-in-the-air/" target="_blank" rel="noopener noreferrer">AirNow: reducing particle exposure</a></li><li><a href="https://open-meteo.com/en/docs/air-quality-api" target="_blank" rel="noopener noreferrer">Open-Meteo / CAMS air-quality documentation</a></li><li><a href="https://www.epa.gov/greenvehicles/greenhouse-gas-emissions-typical-passenger-vehicle" target="_blank" rel="noopener noreferrer">EPA: gasoline vehicle CO₂ assumptions</a></li><li><a href="https://airquality.cpcb.gov.in/AQI_India/" target="_blank" rel="noopener noreferrer">CPCB: India’s official AQI portal</a></li></ul>`;
-function info(type){$('#info-content').innerHTML=type==='sources'?sources:type==='data'?`<span class="eyebrow">TRANSPARENCY FIRST</span><h2>A model of the air around you.</h2><p>Live requests come from Open-Meteo using CAMS atmospheric models. City locations use fixed coordinates. Values describe modeled outdoor conditions near city coordinates; they are not a local monitor or indoor sensor reading.</p><p>We use U.S. AQI categories, which differ from India’s CPCB scale. Check local authorities for official decisions. Readings older than 3 hours are marked stale and excluded from current guidance.</p><p>Last fetched: ${air?escapeHTML(new Date(air.fetchedAt).toLocaleString()):'not available'}.</p><p class="data-note">Open-Meteo’s free endpoint is for noncommercial use under its usage limits. Production commercial use needs the appropriate provider plan. Data attribution: Open-Meteo, CAMS ENSEMBLE.</p>`:type==='privacy'?`<h2>Your household, your choice.</h2><p>Preferences and checklists stay in this browser’s local storage. Chat stays in page memory and clears when you reload. Never enter names, addresses or sensitive medical records.</p><p>In guided mode, questions are answered locally using curated rules. If generative AI is enabled, your question, recent conversation, selected household preferences and current modeled AQI are sent to this site server and the configured AI provider (Google Gemini or OpenAI). The app does not persist conversations on its own server. Provider data-use and retention policies apply; do not enter sensitive information.</p><button class="secondary" id="clear-local">Clear my saved preferences</button>`:type==='carbon'?`<h2>A useful estimate, clearly bounded.</h2><p>EPA estimates about 400 g CO₂ per mile for an average U.S. gasoline car, equal to approximately 0.249 kg per kilometre. Multiply kilometres of driving avoided by that factor.</p><p>This is an illustrative no-drive scenario. It excludes lifecycle emissions and replacement travel, and does not predict local air quality. It is not a measured personal saving.</p>${sources}`:`<h2>A companion for the air we share.</h2><p>Breathe helps households make practical choices during smog and urban pollution. Customize your household, check modeled outdoor air quality, and build a manageable daily routine.</p><p>The companion is ${aiEnabled?'connected to generative AI.':'in guided mode. Generative AI requires a configured server-side AI connection; no AI-generated response is implied.'}</p>${sources}`;$('#info-dialog').showModal()}
-async function loadAir(){const id=++requestId;busy=true;airError='';air=null;render();try{const res=await fetch('/api/air?city='+encodeURIComponent(profile.city),{signal:AbortSignal.timeout(22000)});const data=await res.json();if(!res.ok)throw new Error(data.error||'The data provider could not be reached.');if(id!==requestId)return;air=data;if(air.stale)airError='The provider timestamp is stale. Verify current conditions with your local authority.'}catch(e){if(id!==requestId)return;airError=e.name==='TimeoutError'?'The air-quality service took too long. Please try Refresh.':'Live data could not be loaded. Please try Refresh or check your local authority.'}finally{if(id===requestId){busy=false;render()}}}
-async function ask(text){if($('#send').disabled)return;$('#question').value='';const user=document.createElement('div');user.className='message user';user.textContent=text;$('#chat-log').append(user);$('#send').disabled=true;const bot=document.createElement('div');bot.className='message bot';bot.textContent='Thinking through your question…';$('#chat-log').append(bot);bot.scrollIntoView({block:'nearest'});try{let answer;if(aiEnabled){const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:text,profile,aqi:currentAqi(),history:history.slice(-8)}),signal:AbortSignal.timeout(60000)});const result=await res.json();if(!res.ok)throw new Error(result.error||'The assistant is unavailable.');answer=result.answer;$('#assistant-mode').textContent=result.mode==='generative'?'Generative AI - '+aiProvider:'Safety guidance';bot.textContent=answer+(result.mode==='safety-guidance'?'\n\nSafety guidance':'');history.push({role:'user',content:text},{role:'assistant',content:answer})}else{answer=guidedReply(text,profile,currentAqi());bot.textContent=answer+'\n\nGuided mode · curated guidance'} }catch{$('#assistant-mode').textContent='Guided fallback - AI unavailable';bot.textContent='The AI service is unavailable. Here is a curated fallback:\n\n'+guidedReply(text,profile,currentAqi())}finally{$('#send').disabled=false;$('#chat-log').scrollTop=$('#chat-log').scrollHeight}}
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.view)setView(b.dataset.view);if(b.dataset.viewGo)setView(b.dataset.viewGo);if(['profile-open','location-open','personalize'].includes(b.id))openProfile();if(b.hasAttribute('data-close'))b.closest('dialog').close();if(b.id==='refresh-air')loadAir();if(b.dataset.info)info(b.dataset.info);if(['sources-open','help-open','chat-privacy'].includes(b.id))info(b.id==='sources-open'?'sources':b.id==='chat-privacy'?'privacy':'about');if(b.dataset.impact){const r=routines(profile,currentAqi()).find(r=>r.id===b.dataset.impact);$('#info-content').innerHTML='<span class="eyebrow">THE WHY BEHIND YOUR CHOICE</span><h2>'+r.title+'</h2><p>'+r.impact+'</p><p class="data-note">These are expected directions of impact, not guaranteed personal outcomes.</p><button class="mini-link" data-info="sources">Explore our sources</button>';$('#info-dialog').showModal()}if(b.dataset.done){const id=b.dataset.done;completed=completed.includes(id)?completed.filter(x=>x!==id):[...completed,id];save('breathe-actions-'+today,completed);render();toast('Your daily check-in is saved.')}if(b.dataset.prompt)ask(b.dataset.prompt);if(b.id==='download-pledge'){const blob=new Blob([`A little care. Cleaner air.\nA neighbourhood note for ${profile.city}\n\nPlease switch engines off while waiting where safe, avoid burning leaves and waste, and check on neighbours during pollution episodes. Coordinate essential errands and share verified local advisories.\n\nVerify current conditions with local authorities. Health details are personal; share them only with consent.\n\nPrepared with Breathe.\n`],{type:'text/plain'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='breathe-neighbourhood-note.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}if(b.id==='clear-local'){for(const key of ['breathe-profile','breathe-pledges','breathe-actions-'+today])localStorage.removeItem(key);profile=normalizeProfile({budget:'No-cost first'});completed=[];pledges=[];history=[];$('#info-dialog').close();loadAir();toast('Saved preferences cleared.')}});
-document.addEventListener('change',e=>{if(e.target.dataset.pledge){const id=e.target.dataset.pledge;pledges=e.target.checked?[...new Set([...pledges,id])]:pledges.filter(x=>x!==id);save('breathe-pledges',pledges)}});
-document.addEventListener('input',e=>{if(e.target.id==='km-range'){const km=Number(e.target.value);$('#km-label').textContent=km;$('#carbon-number').textContent=avoidedCarbon(km).toFixed(1)}});
-$('#profile-form').addEventListener('submit',e=>{e.preventDefault();const form=new FormData(e.target);profile=normalizeProfile({...Object.fromEntries(form),sensitive:form.has('sensitive'),purifier:form.has('purifier')});save('breathe-profile',profile);$('#profile-dialog').close();loadAir();toast('Your plan is now a little more you.')});
-$('#chat-form').addEventListener('submit',e=>{e.preventDefault();const q=$('#question').value.trim();if(q)ask(q)});
-render();loadAir();fetch('/api/status').then(r=>r.json()).then(data=>{aiEnabled=data.aiEnabled===true;aiProvider=data.provider==='gemini'?'Google Gemini':'OpenAI';$('#assistant-mode').textContent=aiEnabled?'Generative AI - '+aiProvider:'Guided mode - curated guidance'}).catch(()=>{$('#assistant-mode').textContent='Guided mode - curated guidance'});
+const read = readSaved;
+function save(key, value) {
+  if (!writeSaved(key, value))
+    toast("Browser storage is unavailable. Changes last until you leave.");
+}
+let profile = normalizeProfile(
+    read("breathe-profile", { budget: "No-cost first" }),
+  ),
+  view = "overview",
+  air = null,
+  airError = "",
+  busy = true,
+  aiEnabled = false,
+  aiProvider = "",
+  requestId = 0;
+const today = new Date().toLocaleDateString("en-CA", {
+  timeZone: "Asia/Kolkata",
+});
+let completed = read("breathe-actions-" + today, []);
+if (!Array.isArray(completed)) completed = [];
+completed = [
+  ...new Set(completed.filter((id) => ["move", "room", "cook"].includes(id))),
+];
+let pledges = read("breathe-pledges", []);
+if (!Array.isArray(pledges)) pledges = [];
+let history = [];
+const nav = [
+  ["overview", "dashboard", "Overview"],
+  ["routines", "leaf", "My routines"],
+  ["indoor", "home", "Indoor air"],
+  ["community", "community", "Community"],
+  ["impact", "chart", "My impact"],
+];
+$("#navigation").innerHTML = nav
+  .map(
+    ([id, i, label]) =>
+      `<button class="nav-button ${id === "overview" ? "active" : ""}" data-view="${id}" ${id === "overview" ? 'aria-current="page"' : ""}>${icon(i)}${label}</button>`,
+  )
+  .join("");
+function setView(next) {
+  view = next;
+  document.querySelectorAll("[data-view]").forEach((b) => {
+    b.classList.toggle("active", b.dataset.view === view);
+    if (b.dataset.view === view) b.setAttribute("aria-current", "page");
+    else b.removeAttribute("aria-current");
+  });
+  render();
+  $("#main").focus({ preventScroll: true });
+}
+function date() {
+  return new Intl.DateTimeFormat("en", {
+    day: "numeric",
+    month: "long",
+    weekday: "short",
+    timeZone: "Asia/Kolkata",
+  }).format(new Date());
+}
+function currentAqi() {
+  return isCurrentAir(air) ? air.current.us_aqi : null;
+}
+function heroArt() {
+  return `<svg class="landscape" viewBox="0 0 300 280" fill="none" aria-hidden="true"><circle cx="204" cy="103" r="83" stroke="#cedcc0"/><circle cx="204" cy="103" r="66" stroke="#d4e0c8"/><circle cx="204" cy="103" r="47" fill="#f1f2cc"/><path d="M0 245c65-50 108-35 160-59s97-1 150 24v80H0Z" fill="#c4d6ad"/><path d="M76 280v-92h38v-32h22v124m-64 0v-66H44v66" fill="#a2b991"/><path d="M152 280V134h39v146" fill="#b0c49e"/><path d="M157 134h29v-9h-29m48 155V171h42v109" fill="#91ab80"/><path d="M216 171v-12h20v12" fill="#91ab80"/><path d="M110 281v-39h42v39" fill="#d9e2c4"/><path d="M0 278c52-24 106-15 155-22s110-22 145-1v25H0" fill="#7e9c6f"/><path d="M263 264v-68" stroke="#587550" stroke-width="3"/><ellipse cx="264" cy="199" rx="25" ry="39" fill="#759965"/><path d="M37 267v-64" stroke="#6b895c" stroke-width="3"/><ellipse cx="37" cy="201" rx="18" ry="29" fill="#8aa776"/><path d="M165 151v8m10-8v8m-10 9v8m10-8v8m-10 9v8m10-8v8M86 200v7m12-7v7m-12 9v7m12-7v7M218 186v8m13-8v8m-13 9v8m13-8v8" stroke="#e2e9d3" stroke-width="4"/><path d="m102 88 6-3 7 3m4-18 7-3 7 3" stroke="#9caf8d" stroke-width="2" stroke-linecap="round"/></svg>`;
+}
+function heading(title, sub) {
+  return `<div class="greeting-line"><span class="eyebrow">A LITTLE MORE MINDFUL, EVERY DAY</span><span class="date">${date()}</span></div><h1>${title}</h1><p class="page-subtitle">${sub}</p>`;
+}
+function airCard() {
+  const aqi = currentAqi(),
+    c = category(aqi);
+  const available = Number.isFinite(aqi);
+  const label = busy
+    ? "Fetching live forecast"
+    : available
+      ? "Latest modeled data"
+      : air && !isCurrentAir(air)
+        ? "Stale data · not current"
+        : "Data unavailable";
+  return `<section class="card air-card" aria-label="Outdoor air quality"><div class="card-top"><h2>The air around you</h2><span class="live-tag">${label}</span></div>${busy && !air ? '<p class="loading">Connecting to Open-Meteo for your city…</p>' : `<div class="air-middle"><div><span class="aqi-number">${available ? Math.round(aqi) : "—"}</span><span class="aqi-caption">U.S. AQI · MODELED</span></div><div class="aqi-description"><span class="status-pill ${c.tone}">${escapeHTML(c.label)}</span><p>${available ? (aqi > 150 ? "A good day to take extra care. Choose cleaner indoor air and limit outdoor exertion." : aqi > 100 ? "Sensitive household members should reduce prolonged or heavy outdoor activity." : aqi > 50 ? "Most people can follow their plans. Take care if you are unusually sensitive." : "A little fresh-air time may fit today. Check local advisories before heading out.") : "We couldn’t confirm current conditions. Check your local air-quality authority before outdoor plans."}</p></div></div>${available ? `<div class="air-scale"><span class="air-tick" style="left:${Math.min(99, aqi / 5)}%"></span></div><div class="scale-labels"><span>Good</span><span>Moderate</span><span>Unhealthy</span><span>Hazardous</span></div>` : ""}${airError ? `<div class="error-panel">${escapeHTML(airError)}</div>` : ""}`}
+ <div class="air-foot"><span>${escapeHTML(profile.city)}${air ? " · " + escapeHTML(air.place) : ""}<br>${air ? "Model time: " + escapeHTML(air.current.time.replace("T", " ")) + " " + escapeHTML(air.timezone) : "No sample readings are shown."}</span><button id="refresh-air" class="refresh" ${busy ? "disabled" : ""}>↻ Refresh</button></div><div class="science data-note">Open-Meteo / CAMS · Outdoor model estimate, not a sensor reading.<br>U.S. AQI differs from India’s CPCB AQI. <button class="text-button" data-info="data">About this data</button></div></section>`;
+}
+function routineCards() {
+  return `<div class="routines">${routines(profile, currentAqi())
+    .map(
+      (r) =>
+        `<article class="card routine-card"><div class="routine-icon">${icon(r.icon)}</div><div class="routine-time">${r.time}</div><h3>${r.title}</h3><p>${r.body}</p><span class="routine-tag">${r.tag}</span><div class="routine-bottom"><button class="impact-explain" data-impact="${r.id}">Why it makes a difference</button><button class="done" data-done="${r.id}" aria-label="${completed.includes(r.id) ? "Undo" : "Mark complete"}: ${r.title}" aria-pressed="${completed.includes(r.id)}">${completed.includes(r.id) ? "✓" : "+"}</button></div></article>`,
+    )
+    .join("")}</div>`;
+}
+function forecast() {
+  if (!air?.hourly) return "";
+  const points = air.hourly.time
+    .map((time, i) => ({ time, value: air.hourly.us_aqi[i] }))
+    .filter(
+      (x) =>
+        Number.isFinite(x.value) &&
+        new Date(x.time + "Z").getTime() >=
+          new Date(air.current.time + "Z").getTime(),
+    )
+    .filter((_, i) => i % 3 === 0)
+    .slice(0, 8);
+  if (!points.length) return "";
+  const max = Math.max(...points.map((p) => p.value), 1);
+  return `<section class="card wide-card"><div class="section-line"><h2>The next 24 hours</h2><span class="data-note">Forecast · U.S. AQI</span></div><div class="forecast" aria-hidden="true">${points.map((p) => `<div class="forecast-col"><span class="forecast-value">${Math.round(p.value)}</span><div class="bar" style="height:${(p.value / max) * 95}px"></div><span>${p.time.slice(11, 16)}</span></div>`).join("")}</div><ul class="sr-only" aria-label="Forecast values">${points.map((p) => "<li>" + p.time.slice(11, 16) + ": modeled U.S. AQI " + Math.round(p.value) + "</li>").join("")}</ul><p class="data-note">Local time in ${escapeHTML(air.timezone)}. A lower forecast is not a guarantee of safe conditions; check local alerts.</p></section>`;
+}
+function render() {
+  const active = document.activeElement;
+  const focusKey = active?.closest("#page")
+    ? active.id
+      ? "#" + CSS.escape(active.id)
+      : active.dataset.done
+        ? '[data-done="' + CSS.escape(active.dataset.done) + '"]'
+        : null
+    : null;
+  $("#city-label").textContent = profile.city;
+  $("#household-caption").textContent = profile.sensitive
+    ? "Extra care at home"
+    : profile.commute;
+  let html = "";
+  if (view === "overview")
+    html =
+      heading(
+        "A better day starts with a breath.",
+        "A few thoughtful choices. A healthier home. A little less impact on the air we share.",
+      ) +
+      `<section class="hero"><div class="hero-copy"><span class="eyebrow">YOUR AIR. YOUR EVERYDAY.</span><h2>Small steps today.<br>A clearer tomorrow.</h2><p>Your clean-air plan, shaped around your city, your household, and the way you live.</p><button class="primary" id="personalize">${icon("leaf")} Make it personal</button></div>${heroArt()}</section>` +
+      airCard() +
+      `<div class="section-line"><h2>Your little steps for today</h2><button class="mini-link" data-view-go="routines">View my routine</button></div>` +
+      routineCards() +
+      `<section class="impact-strip"><div class="routine-icon">${icon("leaf")}</div><div><h3>Good for you. Better together.</h3><p>${completed.length} of 3 daily actions complete. Every considered choice counts.</p></div><button class="mini-link" data-view-go="impact">See your impact</button></section>`;
+  if (view === "routines")
+    html =
+      heading(
+        "A little rhythm. A lighter footprint.",
+        "Your plan adapts to your household and the latest available outdoor air estimate.",
+      ) +
+      `<div class="card wide-card"><span class="eyebrow">YOUR DAILY CHECK-IN</span><h2>${completed.length} of 3 small steps complete</h2><p>Take the actions that work for you. Your checklist resets each day.</p><div class="progress" role="progressbar" aria-label="Daily actions completed" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${completed.length}"><span style="width:${(completed.length / 3) * 100}%"></span></div></div>` +
+      routineCards() +
+      forecast() +
+      `<button class="secondary" id="personalize">Adjust my household preferences</button>`;
+  if (view === "indoor")
+    html =
+      heading(
+        "Make home your breathing space.",
+        "Practical ways to reduce indoor particle sources, with or without an air cleaner.",
+      ) +
+      `<div class="card wide-card"><span class="eyebrow">START WITH WHAT YOU HAVE</span><h2>${profile.purifier ? "Make your air cleaner work well." : "Cleaner air can begin with a few free changes."}</h2><p>${profile.purifier ? "Use a correctly sized mechanical HEPA cleaner continuously in your main room. Keep airflow clear, maintain filters, and avoid ozone-producing devices." : "Avoid incense, candles, smoking and dry sweeping indoors. Damp-dust and mop instead. Plants and bowls of water do not replace filtration."}</p><span class="status-pill good">${profile.budget === "No-cost first" ? "Your preference: no-cost first" : "Your preference: flexible budget"}</span></div><div class="detail-grid"><article class="card wide-card"><div class="routine-icon">${icon("home")}</div><h3>Windows need context.</h3><p>When outdoor particle pollution is high, close windows if safe. Air out the home when outdoor conditions improve, rather than at a fixed hour.</p><p class="data-note">Never block required ventilation or allow unsafe heat. Particle filters don’t remove CO₂ or all gases.</p></article><article class="card wide-card"><div class="routine-icon">${icon("leaf")}</div><h3>Keep the kitchen lighter.</h3><p>Steam or boil instead of frying. Use an exhaust fan that vents outside. Never use charcoal grills or generators indoors.</p><p class="data-note">Less indoor smoke means fewer new particles. A good routine cannot guarantee a pollutant percentage.</p></article></div><article class="card wide-card"><h3>Know when to get help.</h3><p>If anyone has severe breathing difficulty, chest pain, blue lips or fainting, seek local emergency medical help. Follow clinician-provided care plans; this app does not recommend medication changes.</p><button class="mini-link" data-info="sources">Read the guidance behind these steps</button></article>`;
+  if (view === "community")
+    html =
+      heading(
+        "Better air is a shared effort.",
+        "Start with your home. Bring a little care to your neighbourhood.",
+      ) +
+      `<section class="hero"><div class="hero-copy"><span class="eyebrow">A NEIGHBOURHOOD OF SMALL ACTIONS</span><h2>One street.<br>Many little changes.</h2><p>Choose a pledge and download a conversation starter to share with your community.</p><button class="primary" id="download-pledge">Download a neighbourhood note</button></div>${heroArt()}</section><section class="card wide-card"><h2>Our cleaner-air commitments</h2><p>These are your personal pledges, saved on this browser.</p>${[
+        [
+          "idling",
+          "Keep school gates idle-free",
+          "Switch off engines while waiting, where safe.",
+        ],
+        [
+          "burning",
+          "Keep leaves and waste out of the fire",
+          "Use local collection or appropriate composting.",
+        ],
+        [
+          "neighbour",
+          "Check in on a neighbour",
+          "Share verified alerts and offer help with essential errands.",
+        ],
+      ]
+        .map(
+          ([id, title, text]) =>
+            `<label class="pledge"><input type="checkbox" data-pledge="${id}" ${pledges.includes(id) ? "checked" : ""}><span>${title}<small class="data-note" style="display:block">${text}</small></span></label>`,
+        )
+        .join(
+          "",
+        )}</section><div class="card wide-card"><h3>Share useful information, gently.</h3><p>Use current local advisories. Never share a neighbour’s health details without consent. Community actions can reduce emission sources; a numerical neighbourhood AQI improvement cannot be promised.</p></div>`;
+  if (view === "impact")
+    html =
+      heading(
+        "See the difference in your choices.",
+        "Understand the direction of your impact, with the assumptions in plain sight.",
+      ) +
+      `<div class="detail-grid"><div class="card wide-card"><span class="eyebrow">YOUR DAILY PROGRESS</span><div class="metric">${completed.length}<span style="font:16px 'Segoe UI'"> / 3</span></div><p>Thoughtful actions completed today.</p><div class="progress" role="progressbar" aria-label="Daily actions completed" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${completed.length}"><span style="width:${(completed.length / 3) * 100}%"></span></div></div><div class="card wide-card"><span class="eyebrow">COMMUNITY STARTS WITH YOU</span><div class="metric">${pledges.length}</div><p>Personal clean-air commitments.</p></div></div><section class="card wide-card"><span class="eyebrow">EXPLORE A NO-DRIVE DAY</span><h2>What if you skipped one solo car trip?</h2><label for="km-range">Daily gasoline driving avoided: <strong id="km-label">${profile.distance}</strong> km</label><input class="slider" id="km-range" type="range" min="0" max="100" value="${profile.distance}"><div class="metric"><span id="carbon-number" role="status" aria-live="polite">${avoidedCarbon(profile.distance).toFixed(1)}</span> <span style="font:18px 'Segoe UI'">kg CO₂</span></div><p>Estimated tailpipe emissions avoided on a no-drive day.</p><p class="data-note">Calculation: distance × 0.4 kg per mile ÷ 1.609344 km per mile. EPA U.S.-average gasoline vehicle proxy, not an India-specific fleet estimate. Actual emissions vary. Excludes lifecycle emissions, replacement travel and public-transit emissions. This is a scenario, not a measured saving.</p><p class="data-note">CO₂ is a climate pollutant. This estimate does not predict PM₂.₅ exposure, health improvement or a change in local AQI.</p><button class="mini-link" data-info="carbon">Read the calculation & source</button></section>`;
+  $("#page").innerHTML = html;
+  if (focusKey)
+    document.querySelector(focusKey)?.focus({ preventScroll: true });
+}
+function toast(text) {
+  $("#toast").textContent = text;
+  $("#toast").classList.add("visible");
+  setTimeout(() => $("#toast").classList.remove("visible"), 3500);
+}
+function openProfile() {
+  for (const key of ["city", "commute", "distance", "budget"])
+    $("#" + key).value = profile[key];
+  for (const key of ["sensitive", "purifier"])
+    $("#" + key).checked = profile[key];
+  $("#profile-dialog").showModal();
+}
+function showInfoDialog() {
+  const dialog = $("#info-dialog"),
+    title = $("#info-content h2");
+  if (title) {
+    title.id = "info-dialog-title";
+    dialog.setAttribute("aria-labelledby", title.id);
+  }
+  dialog.showModal();
+}
+const sources = `<h2>Grounded in better information.</h2><p>Our guidance draws on public-health and environmental sources. It supports everyday decisions and does not replace local alerts or medical care.</p><ul class="sources-list"><li><a href="https://www.epa.gov/wildfires/indoor-air-filtration" target="_blank" rel="noopener noreferrer">EPA: indoor air filtration</a></li><li><a href="https://www.airnow.gov/wildfires/when-smoke-is-in-the-air/" target="_blank" rel="noopener noreferrer">AirNow: reducing particle exposure</a></li><li><a href="https://open-meteo.com/en/docs/air-quality-api" target="_blank" rel="noopener noreferrer">Open-Meteo / CAMS air-quality documentation</a></li><li><a href="https://www.epa.gov/greenvehicles/greenhouse-gas-emissions-typical-passenger-vehicle" target="_blank" rel="noopener noreferrer">EPA: gasoline vehicle CO₂ assumptions</a></li><li><a href="https://airquality.cpcb.gov.in/AQI_India/" target="_blank" rel="noopener noreferrer">CPCB: India’s official AQI portal</a></li></ul>`;
+function info(type) {
+  $("#info-content").innerHTML =
+    type === "sources"
+      ? sources
+      : type === "data"
+        ? `<span class="eyebrow">TRANSPARENCY FIRST</span><h2>A model of the air around you.</h2><p>Live requests come from Open-Meteo using CAMS atmospheric models. City locations use fixed coordinates. Values describe modeled outdoor conditions near city coordinates; they are not a local monitor or indoor sensor reading.</p><p>We use U.S. AQI categories, which differ from India’s CPCB scale. Check local authorities for official decisions. Readings older than 3 hours are marked stale and excluded from current guidance.</p><p>Last fetched: ${air ? escapeHTML(new Date(air.fetchedAt).toLocaleString()) : "not available"}.</p><p class="data-note">Open-Meteo’s free endpoint is for noncommercial use under its usage limits. Production commercial use needs the appropriate provider plan. Data attribution: Open-Meteo, CAMS atmospheric models.</p>`
+        : type === "privacy"
+          ? `<h2>Your household, your choice.</h2><p>Preferences and checklists stay in this browser’s local storage. Chat stays in page memory and clears when you reload. Never enter names, addresses or sensitive medical records.</p><p>In guided mode, questions are answered locally using curated rules. If generative AI is enabled, your question, recent conversation, selected household preferences and current modeled AQI are sent to this site server and the configured AI provider (Google Gemini or OpenAI). The app does not persist conversations on its own server. Provider data-use and retention policies apply; do not enter sensitive information.</p><button class="secondary" id="clear-local">Clear my saved preferences</button>`
+          : type === "carbon"
+            ? `<h2>A useful estimate, clearly bounded.</h2><p>EPA estimates about 400 g CO₂ per mile for an average U.S. gasoline car, equal to approximately 0.249 kg per kilometre. Multiply kilometres of driving avoided by that factor.</p><p>This is an illustrative no-drive scenario. It excludes lifecycle emissions and replacement travel, and does not predict local air quality. It is not a measured personal saving.</p>${sources}`
+            : `<h2>A companion for the air we share.</h2><p>Breathe helps households make practical choices during smog and urban pollution. Customize your household, check modeled outdoor air quality, and build a manageable daily routine.</p><p>The companion is ${aiEnabled ? "connected to generative AI." : "in guided mode. Generative AI requires a configured server-side AI connection; no AI-generated response is implied."}</p>${sources}`;
+  showInfoDialog();
+}
+async function loadAir() {
+  const id = ++requestId;
+  busy = true;
+  airError = "";
+  air = null;
+  render();
+  try {
+    const res = await fetch(
+      "/api/air?city=" + encodeURIComponent(profile.city),
+      { signal: AbortSignal.timeout(22000) },
+    );
+    const data = await res.json();
+    if (!res.ok)
+      throw new Error(data.error || "The data provider could not be reached.");
+    if (id !== requestId) return;
+    air = data;
+    if (air.stale)
+      airError =
+        "The provider timestamp is stale. Verify current conditions with your local authority.";
+  } catch (e) {
+    if (id !== requestId) return;
+    airError =
+      e.name === "TimeoutError"
+        ? "The air-quality service took too long. Please try Refresh."
+        : "Live data could not be loaded. Please try Refresh or check your local authority.";
+  } finally {
+    if (id === requestId) {
+      busy = false;
+      render();
+    }
+  }
+}
+async function ask(text) {
+  if ($("#send").disabled) return;
+  $("#question").value = "";
+  const user = document.createElement("div");
+  user.className = "message user";
+  user.textContent = text;
+  $("#chat-log").append(user);
+  $("#send").disabled = true;
+  $("#chat-log").setAttribute("aria-busy", "true");
+  const bot = document.createElement("div");
+  bot.className = "message bot";
+  bot.textContent = "Thinking through your question…";
+  $("#chat-log").append(bot);
+  bot.scrollIntoView({ block: "nearest" });
+  try {
+    let answer;
+    if (aiEnabled) {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: text,
+          profile,
+          aqi: currentAqi(),
+          history: history.slice(-8),
+        }),
+        signal: AbortSignal.timeout(60000),
+      });
+      const result = await res.json();
+      if (!res.ok)
+        throw new Error(result.error || "The assistant is unavailable.");
+      answer = result.answer;
+      $("#assistant-mode").textContent =
+        result.mode === "generative"
+          ? "Generative AI - " + aiProvider
+          : "Safety guidance";
+      bot.textContent =
+        answer +
+        (result.mode === "safety-guidance" ? "\n\nSafety guidance" : "");
+      history.push(
+        { role: "user", content: text },
+        { role: "assistant", content: answer },
+      );
+    } else {
+      answer = guidedReply(text, profile, currentAqi());
+      bot.textContent = answer + "\n\nGuided mode · curated guidance";
+    }
+  } catch {
+    $("#assistant-mode").textContent = "Guided fallback - AI unavailable";
+    bot.textContent =
+      "The AI service is unavailable. Here is a curated fallback:\n\n" +
+      guidedReply(text, profile, currentAqi());
+  } finally {
+    $("#send").disabled = false;
+    $("#chat-log").setAttribute("aria-busy", "false");
+    $("#chat-log").scrollTop = $("#chat-log").scrollHeight;
+  }
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.view) setView(b.dataset.view);
+  if (b.dataset.viewGo) setView(b.dataset.viewGo);
+  if (["profile-open", "location-open", "personalize"].includes(b.id))
+    openProfile();
+  if (b.hasAttribute("data-close")) b.closest("dialog").close();
+  if (b.id === "refresh-air") loadAir();
+  if (b.dataset.info) info(b.dataset.info);
+  if (["sources-open", "help-open", "chat-privacy"].includes(b.id))
+    info(
+      b.id === "sources-open"
+        ? "sources"
+        : b.id === "chat-privacy"
+          ? "privacy"
+          : "about",
+    );
+  if (b.dataset.impact) {
+    const r = routines(profile, currentAqi()).find(
+      (r) => r.id === b.dataset.impact,
+    );
+    $("#info-content").innerHTML =
+      '<span class="eyebrow">THE WHY BEHIND YOUR CHOICE</span><h2>' +
+      r.title +
+      "</h2><p>" +
+      r.impact +
+      '</p><p class="data-note">These are expected directions of impact, not guaranteed personal outcomes.</p><button class="mini-link" data-info="sources">Explore our sources</button>';
+    showInfoDialog();
+  }
+  if (b.dataset.done) {
+    const id = b.dataset.done;
+    completed = completed.includes(id)
+      ? completed.filter((x) => x !== id)
+      : [...completed, id];
+    save("breathe-actions-" + today, completed);
+    render();
+    toast("Your daily check-in is saved.");
+  }
+  if (b.dataset.prompt) ask(b.dataset.prompt);
+  if (b.id === "download-pledge") {
+    const blob = new Blob(
+      [
+        `A little care. Cleaner air.\nA neighbourhood note for ${profile.city}\n\nPlease switch engines off while waiting where safe, avoid burning leaves and waste, and check on neighbours during pollution episodes. Coordinate essential errands and share verified local advisories.\n\nVerify current conditions with local authorities. Health details are personal; share them only with consent.\n\nPrepared with Breathe.\n`,
+      ],
+      { type: "text/plain" },
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "breathe-neighbourhood-note.txt";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  if (b.id === "clear-local") {
+    const cleared = clearSaved();
+    profile = normalizeProfile({ budget: "No-cost first" });
+    completed = [];
+    pledges = [];
+    history = [];
+    $("#info-dialog").close();
+    loadAir();
+    toast(
+      cleared
+        ? "All saved Breathe preferences and check-ins cleared."
+        : "Storage is unavailable. Preferences reset for this session.",
+    );
+  }
+});
+document.addEventListener("change", (e) => {
+  if (e.target.dataset.pledge) {
+    const id = e.target.dataset.pledge;
+    pledges = e.target.checked
+      ? [...new Set([...pledges, id])]
+      : pledges.filter((x) => x !== id);
+    save("breathe-pledges", pledges);
+  }
+});
+document.addEventListener("input", (e) => {
+  if (e.target.id === "km-range") {
+    const km = Number(e.target.value);
+    $("#km-label").textContent = km;
+    $("#carbon-number").textContent = avoidedCarbon(km).toFixed(1);
+  }
+});
+$("#profile-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const form = new FormData(e.target);
+  profile = normalizeProfile({
+    ...Object.fromEntries(form),
+    sensitive: form.has("sensitive"),
+    purifier: form.has("purifier"),
+  });
+  save("breathe-profile", profile);
+  $("#profile-dialog").close();
+  loadAir();
+  toast("Your plan is now a little more you.");
+});
+$("#chat-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const q = $("#question").value.trim();
+  if (q) ask(q);
+});
+render();
+loadAir();
+fetch("/api/status")
+  .then((r) => r.json())
+  .then((data) => {
+    aiEnabled = data.aiEnabled === true;
+    aiProvider = data.provider === "gemini" ? "Google Gemini" : "OpenAI";
+    $("#assistant-mode").textContent = aiEnabled
+      ? "Generative AI - " + aiProvider
+      : "Guided mode - curated guidance";
+  })
+  .catch(() => {
+    $("#assistant-mode").textContent = "Guided mode - curated guidance";
+  });
+
+// Only public outdoor model data is refreshed; household data stays in this tab.
+setInterval(
+  () => {
+    if (!document.hidden && !busy) loadAir();
+  },
+  5 * 60 * 1000,
+);
+document.addEventListener("visibilitychange", () => {
+  if (
+    !document.hidden &&
+    !busy &&
+    (!air || Date.now() - Date.parse(air.fetchedAt) > 5 * 60 * 1000)
+  )
+    loadAir();
+});

@@ -1,81 +1,73 @@
-# Breathe: a little care, cleaner air
+# Breathe - a clean-air companion
 
-[Live app](https://breathe-smog-companion.vercel.app) | [Public repository](https://github.com/abhishek-0706/breathe-smog-companion)
+Breathe helps families and communities plan for severe winter smog and urban air pollution. It combines real city-area outdoor model estimates, household preferences, practical routines, source-linked indoor-air guidance and a Google Gemini companion. It explains which choices can reduce exposure or emissions without inventing household readings, health savings or a city AQI improvement.
 
-A clean-air companion for families and communities navigating winter smog and urban pollution. Built with plain JavaScript, accessible HTML/CSS and a dependency-free Cloudflare Worker.
-
-## Features
-
-- Live Open-Meteo/CAMS outdoor air-quality data for nine supported cities; modeled U.S. AQI, pollutant values, provenance and timestamps. Never substitutes examples for unavailable readings.
-- Household personalization: city, sensitive family members, daily commute, return distance, budget and air-cleaner availability.
-- Daily low-emission routines, indoor-air guidance, explainable action impacts, local daily checklist and community pledges.
-- Interactive avoided-driving CO2 scenario calculator with explicit EPA assumptions.
-- Server-side Google Gemini integration with optional OpenAI Responses support with bounded context, policy instructions, deterministic emergency safeguards and honest guided-mode fallback.
-- 30 source-grounded golden scenarios; 63 automated tests; desktop/mobile browser checks.
+- Public application: https://breathe-smog-companion.vercel.app
+- Public repository: https://github.com/abhishek-0706/breathe-smog-companion
+- Submission text: [SUBMISSION.txt](SUBMISSION.txt)
+- Verification evidence and limits: [VALIDATION.json](VALIDATION.json)
 
 ## Run locally
 
-Requires Node.js 22 or later. No install step and no third-party runtime packages.
+Use Node 24 and npm. Build tools are development-only; the shipped application has no third-party runtime packages.
 
 ```sh
+npm ci --include=dev --ignore-scripts
 npm run build
 npm test
 npm start
 ```
 
-Open http://127.0.0.1:4173. Build before testing because API security tests exercise the deployable artifact. To bypass a restricted npm wrapper, run `node scripts/build.mjs`, `node --test --test-isolation=none tests/*.test.mjs` and `node scripts/serve.mjs` directly.
+The preview runs at http://127.0.0.1:4173. Set `BREATHE_PORT` to use another local port. Without an AI credential, it uses explicitly labeled curated guidance. It does not load local environment files automatically. Never commit real environment files.
 
-## Enable generative AI
+## What the application does
 
-Configure `GEMINI_API_KEY` as a Vercel Production **Secret**. The existing deployment's exact variable name `Gemini_Api_Key` is also supported. Optional `GEMINI_MODEL` defaults to `gemini-flash-lite-latest`. Gemini is preferred when a Gemini key is configured. The key is sent only to Google's fixed API host in the `x-goog-api-key` header, never in a URL or client bundle. See the [official Gemini API reference](https://ai.google.dev/api/generate-content).
+| Need | Behavior | Impact explained |
+| --- | --- | --- |
+| Local conditions | Retrieves Open-Meteo/CAMS outdoor model estimates for nine supported cities, with source, model time and U.S. AQI category | Outdoor estimates support planning; they are not indoor or doorstep sensor measurements |
+| Household routines | Adapts to city, commute, distance, budget, sensitive members and existing air-cleaner access | Separates remote work, transit, source control and safer essential travel |
+| Indoor air | Explains source control, appropriate mechanical filtration and condition-dependent ventilation | Describes particle reduction and filter limitations without a guaranteed percentage |
+| Sustainable choices | Shows an explicit gasoline no-drive tailpipe scenario and personal community pledges | Distinguishes CO2 emissions, local pollutants and health exposure |
+| Companion | Uses server-side Gemini with bounded context and curated source facts | Gives contextual explanations; critical safety intents use labeled public-health guidance |
 
-Optional OpenAI support remains available with `OPENAI_API_KEY` and `OPENAI_MODEL` (default `gpt-4.1-mini`) when Gemini is not configured. Provider selection is server-owned. Never put real keys in browser code, Git or local storage. For local development, provide environment variables through your normal secret manager or shell session; the app does not automatically load `.env` files.
+Supported cities are New Delhi, Mumbai, Bengaluru, Lucknow, London, Beijing, Lahore, Kathmandu and New York. They use fixed city coordinates, not live geocoding or device location. Community commitments and checklists are personal browser data; the app does not invent participation totals or provide a public community database.
 
-Without credentials, the assistant uses clearly labeled curated guided responses, not GenAI. Generated answers use normalized household context and server-fetched air data. Safety-critical intents are handled before model calls. Blocked, empty or truncated Gemini responses fail explicitly and the UI offers a labeled curated fallback. Conversation storage and data use are subject to the selected provider's policies; do not enter personal medical records. OpenAI requests use `store:false`; that setting does not apply to Gemini.
+## Configure GenAI
 
-## Real data and limitations
+Set `GEMINI_API_KEY` as a Production secret in Vercel. The existing deployment's exact alias `Gemini_Api_Key` also works. The production project currently selects `gemini-3.1-flash-lite` through `GEMINI_MODEL`; source defaults to `gemini-flash-lite-latest`. A failed model can switch only to a supported text model advertised for the same key. Calls share a 55-second total deadline, have a bounded retry budget and stop on authentication or quota errors. Keys go only to the fixed provider host in a header, never the browser, URL or prompt.
 
-Data: [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api), using CAMS ENSEMBLE atmospheric models. This is an outdoor model estimate for city coordinates, not a household sensor, indoor measurement or official local alert. U.S. AQI differs from India's CPCB AQI. Values older than three hours are marked stale and excluded from current guidance. Five-minute public-data caching is supported on Workers.
+Optional OpenAI support uses `OPENAI_API_KEY` and `OPENAI_MODEL` only when Gemini is absent. It uses the Responses API with `store:false` and rejects incomplete responses. Gemini retention follows Google's provider policy; no blanket no-retention claim is made. User questions and bounded recent context go to the configured provider except for deterministic safety routes. Do not enter personal medical records.
 
-The free provider endpoint is for noncommercial use under its rate limits (currently documented as up to 10,000 requests/day). For commercial use, obtain the appropriate plan. Recheck provider terms before production deployment. City coordinates are fixed; this version does not use live geocoding. See [research and attribution](data/RESEARCH.md).
+## Data and impact assumptions
 
-The CO2 calculator estimates tailpipe emissions avoided when gasoline driving is replaced with **no driving**, using EPA's U.S.-average 0.4 kg/mile proxy. It is not a net public-transit saving, local fleet estimate, health prediction or AQI reduction.
+[Open-Meteo's air-quality API](https://open-meteo.com/en/docs/air-quality-api) uses CAMS atmospheric models. The app does not label all locations as the European ensemble. It shows U.S. AQI, which differs from India's CPCB index. Model timestamps older than three hours, materially future timestamps, malformed responses and failed requests never become a fabricated zero or a Good reading. The browser also expires an aged reading and refreshes public data when active. Check local authorities for official advisories. The provider's free endpoint is for noncommercial use under its limits; check current terms for another deployment or commercial use.
 
-## Structure
+The calculator uses EPA's illustrative U.S.-average gasoline tailpipe factor of 0.4kg/mile divided by 1.609344km/mile. Avoiding 10km gives about 2.49kg CO2. Actual vehicles vary. This is a no-drive scenario, excluding replacement travel, transit emissions and lifecycle effects. CO2 savings cannot calculate a city's AQI drop or personal health benefit. Explicit valid distances in a chat question take precedence over the saved trip scenario.
 
-- `web/`: responsive accessible UI, local preferences and interactions.
-- `lib/guidance.mjs`: AQI categories, constrained profile, curated guidance and impact math.
-- `worker/index.mjs`: allowlisted provider requests, chat endpoint, input limits and security headers.
-- `scripts/build.mjs`: embeds assets and guidance into one deterministic Worker module.
-- `scripts/serve.mjs`: local Node HTTP adapter.
-- `tests/`: source-grounded guided-answer checks and API/security tests.
-- `data/golden-dataset.json`: 30 researched synthetic evaluation cases, not patient records or measured air data.
-- `SUBMISSION.txt`: form copy, link status and publish steps.
+## Maintainable source and build
 
-## Evaluation
+- `lib/guidance.mjs`: shared city registry, profile boundaries, AQI categories, freshness, routines, impact math and curated responses.
+- `worker/index.mjs`: request routing and orchestration.
+- `worker/http.mjs`: sanitized responses, trusted-platform identity, best-effort throttling and timed byte-bounded JSON reads.
+- `worker/air.mjs`: allowlisted upstream fetches and normalized data.
+- `worker/providers.mjs`: provider contracts, model discovery, deadlines and transport failures.
+- `worker/chat.mjs` and `worker/policy.mjs`: bounded conversation, server-computed scenarios and source-backed topic facts.
+- `web/`: accessible browser UI and optional local storage.
+- `api/index.mjs`: allowlisted Vercel adapter.
+- `scripts/build.mjs`: esbuild bundles modules and optimizes browser assets; both hosts use identical assets. Build output never embeds runtime credentials.
 
-`npm test` currently passes 74 tests: 34 golden-set/schema/boundary/regression checks, 15 API/security/core tests 3 Vercel adapter checks and 22 Gemini provider checks. Selected assertions cover all 30 scenarios, including 15 marked critical. These are lexical and behavioral checks of guided responses; they do not establish clinical safety, complete semantic coverage or GenAI accuracy. Gemini and OpenAI HTTP contracts are mocked in automated tests; live evaluation is reported separately.
+Source is formatted with pinned Prettier. `npm run check:format` enforces consistency; `npm run format` applies it. CI installs the exact lockfile without install scripts, checks formatting, builds, runs regressions, checks source size and excludes tracked secrets. Generated files and dependency directories are ignored.
 
-Desktop and mobile checks cover 12 flows including dialog fit, no horizontal overflow, profile persistence, checklist, community pledge, calculator and emergency response. Optional `node scripts/browser-qa.mjs` requires a dedicated, already-running local Chromium debugging instance on loopback port 9222 and the app on 4173; it modifies that test profile's local preferences and closes the test browser. Never point it at a personal browser profile.
+## Verify behavior honestly
 
-## Deploy
+`npm test` covers the sourced 30-case synthetic golden dataset, boundaries, malformed/stale upstream data, emergency handling, provider contracts, bounded fallback, input limits, spoofed identity headers, stalled streams, optional storage and the Vercel adapter. These are targeted behavioral and lexical assertions, not clinical certification or a guarantee of GenAI accuracy. Provider HTTP calls are mocked in automated regressions.
 
-`npm run build` emits `dist/server/index.js` plus `dist/.openai/hosting.json`. The Worker default-exports `fetch(request, env)`. The tracked Sites identity belongs to the original deployment; forks should register their own site. This project has no database, uploads or connector permissions.
+`scripts/browser-qa.mjs` uses a dedicated local Chromium debugging port, a running local preview and development-only axe-core. Its synthetic air fixtures make UI tests repeatable; they are not presented as real data or successful model generations. It checks keyboard focus, named dialogs, storage, calculator, forecast text, stale/outage behavior, responsive layouts and automated WCAG rules. A clean automated audit is not exhaustive accessibility conformance.
 
-## Safety, privacy and security
+`node scripts/evaluate-live.mjs --all` calls the real public app for all 30 scenarios at a bounded cadence. It reads no credentials and stops on a failed request. The app fetches actual current modeled AQI instead of accepting dataset AQI as a trusted reading, so some scenario values are hypothetical. HTTP 200 alone is not factual accuracy: review every answer against expected/forbidden assertions and sources, distinguishing actual generations from curated safety responses. Raw run artifacts stay outside this checkout in the adjacent `Private_Validation` folder; only reviewed successful summaries are published.
 
-Read [SECURITY.md](SECURITY.md). Household preferences and checklists stay in browser local storage. Conversation history is in page memory; AI-enabled requests send bounded context to the server and the configured AI provider. Do not enter personal medical records. Health guidance does not diagnose or replace local medical care. Severe symptoms need emergency medical attention.
+## Security and submission limits
 
-## Submission status
+Read [SECURITY.md](SECURITY.md). The public MVP uses no accounts, database, cookies or third-party browser analytics. Household data stays in browser storage; chat context stays in tab memory. Runtime secrets stay server-side. Throttling trusts only the active host's client metadata. In-memory limits are best effort per server instance; use provider spending controls and a durable shared quota for a high-traffic paid deployment. Origin checks are not account authentication.
 
-The public repository and Vercel app are available. Latest CI passes 74 tests. All 13 selected live requests succeeded: 11 actual Gemini generations and two labeled curated safety responses. Independent semantic review found six complete answers and seven partial answers, with no forbidden-advice violations observed. This is incomplete coverage, not full model acceptance. A required accepted-host final demo URL is still missing. LinkedIn was skipped at the owner's request although the form marks it mandatory. See SUBMISSION_FIELDS.json and reports/submission-flags.json for readiness.
-
-## Vercel deployment
-
-The app is deployed at https://breathe-smog-companion.vercel.app in the owner's Vercel account. The production URL is public with explicit owner approval; preview deployment URLs retain Vercel authentication. `vercel.json`, `api/index.mjs` and `scripts/build-vercel.mjs` provide a Node function adapter and static frontend. Hosted real-data responses were verified. Both `.env.local` and `.vercel/` are excluded from Git and deployment uploads.
-
-The Vercel AI Gateway eligibility probe returned HTTP 403 `customer_verification_required` because account card verification is required. No Gateway model output was generated. The app uses direct Gemini integration (or optional OpenAI), independently of Vercel AI Gateway. Production selects `gemini-3.1-flash-lite` with supported-model discovery and bounded failover. The end-to-end provider deadline is 55 seconds. Critical safety and personal medical-condition questions receive labeled sourced guidance. Generated impact estimates are grounded in server-computed tailpipe scenarios. Failed model requests receive a labeled curated fallback. See VALIDATION.json for current results.
-
-## Reproducing live evaluation
-
-`node scripts/evaluate-live.mjs` runs 13 selected synthetic scenarios through the public app, at a bounded cadence. It never reads API keys. It stops on the first failed HTTP request and records failures rather than silently replacing model answers with fixtures. The full 30-case dataset is exercised by selected assertions in local tests; this live subset is a separate evaluation and requires semantic review. The latest live run completed; independent semantic review records seven partial answers. Earlier provider capacity failures remain historical evidence.
+GitHub CodeQL and dependency audit evidence is recorded separately from Codex Security. A scanner's completion or zero findings does not establish absence of vulnerabilities. Challenge evaluation scores are determined by the platform and are not guaranteed by these checks. Submission still needs an accepted-host demo URL. LinkedIn remains skipped at the owner's request, despite the supplied form marking it mandatory.

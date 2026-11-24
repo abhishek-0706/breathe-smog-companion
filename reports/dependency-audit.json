@@ -1,0 +1,20 @@
+{
+  "checked_on": "2026-11-24",
+  "command": "npm audit --json --audit-level=high",
+  "exit_code": 0,
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "runtime_dependencies": [],
+  "dev_tools": {
+    "axe-core": "4.14.1",
+    "esbuild": "0.28.2",
+    "prettier": "3.10.1"
+  },
+  "scope": "Known registry advisories for the pinned dependency graph; not a source security audit."
+}

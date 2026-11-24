@@ -1,1 +1,22 @@
-{"name":"breathe-smog-companion","version":"1.0.0","private":true,"type":"module","scripts":{"build":"node scripts/build.mjs","start":"node scripts/serve.mjs","test":"node --test --test-isolation=none tests/*.test.mjs"},"engines":{"node":">=22"}}
+{
+  "name": "breathe-smog-companion",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node scripts/serve.mjs",
+    "test": "node --test --test-isolation=none tests/*.test.mjs",
+    "format": "prettier --write worker lib api scripts tests web package.json vercel.json .github/workflows/verify.yml",
+    "check:format": "prettier --check worker lib api scripts tests web package.json vercel.json .github/workflows/verify.yml",
+    "check": "npm run check:format && node scripts/check-source.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "axe-core": "4.14.1",
+    "esbuild": "0.28.2",
+    "prettier": "3.10.1"
+  }
+}

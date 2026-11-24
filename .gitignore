@@ -11,3 +11,13 @@ dist/
 public/
 .vercel
 .env*
+
+# Raw runs and troubleshooting stay outside the public checkout.
+reports/history/
+reports/*attempt*
+reports/*partial*
+reports/live-*.json
+reports/browser-accessibility.json
+reports/submission-flags.json
+reports/challenge-evaluation-baseline.json
+SUBMISSION_FIELDS.json

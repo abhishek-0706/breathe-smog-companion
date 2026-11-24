@@ -1,0 +1,21 @@
+{
+  "verified_on": "2026-11-24",
+  "browser": "Microsoft Edge headless",
+  "scope": "Synthetic deterministic air data and guided mode; not a live-provider or model-accuracy test.",
+  "workflow_checks_passed": 20,
+  "audited_views": [
+    "overview",
+    "information-dialog",
+    "household-dialog",
+    "routines",
+    "indoor",
+    "impact",
+    "community",
+    "privacy-dialog",
+    "mobile-overview"
+  ],
+  "automated_accessibility_violations": 0,
+  "runtime_errors": 0,
+  "manual_review_required": true,
+  "limits": "Automated axe checks are not exhaustive accessibility conformance. Some contrast checks need human review."
+}

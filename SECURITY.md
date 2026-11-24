@@ -1,44 +1,19 @@
-# Security review
+# Security
 
-Review date: 23 November 2026. Scope: source, built Worker, deterministic guided responses, mocked Gemini and OpenAI contracts, live air-data integration and local UI behavior.
+Breathe keeps provider credentials in server environment variables and uses fixed upstream hosts. Browser content is rendered as text or escaped markup. Same-origin JSON chat requests have bounded profiles, history, question length, streamed body size and read deadlines. Platform-owned client metadata supplies best-effort per-instance throttling; caller identity headers alone are not trusted.
 
-## Implemented controls
+The browser uses only same-origin JavaScript. Response headers include a restrictive Content Security Policy, nosniff, referrer and permissions policies. No third-party runtime packages, analytics, accounts, database or file uploads are used. Household preferences are optional local browser storage. Chat remains in tab memory; generative requests send limited context to the configured provider. Provider retention policies apply. Do not enter medical records or secrets.
 
-- No third-party runtime dependencies; no remotely loaded JavaScript.
-- Strict same-origin chat POST, JSON-only content type, 16 KB streaming request limit, 1,500-character question limit, constrained profiles and bounded history.
-- Fixed upstream hosts and city-coordinate allowlist; user input cannot select an arbitrary fetch URL. Protects against a generic SSRF proxy.
-- AI provider keys live only in server environment; no credentials in client code, source, URLs, storage or error messages.
-- Model responses and chat questions render through `textContent`, not HTML. All dynamic provider strings in templates are escaped. Static SVG markup is developer-owned.
-- CSP restricts scripts and connections to same origin; no eval, plugins, inline script or arbitrary form targets. Inline styles are permitted for charts. `nosniff`, referrer and permission policies are set.
-- Invalid, stale and unavailable data never becomes a fabricated favorable reading. Provider responses validate numeric values and timestamps.
-- Safety-critical emergency, medication, generator and heat intents use deterministic advice before model invocation. Model policy adds evidence and uncertainty constraints.
-- Server fetches air data itself for generated answers; a browser-supplied AQI is ignored.
-- No server-side household database, application request-body logs, analytics or file uploads. OpenAI calls use `store:false`; Gemini uses its provider policies, without a misleading storage guarantee.
+The server fetches allowlisted modeled air data itself and ignores client-supplied AQI and carbon totals. Stale, malformed and unavailable readings never become a fabricated favorable value. Safety-critical routes use labeled curated guidance before provider calls. Generated output is untrusted; prompt injection and factual mistakes cannot be proven eliminated.
 
-## Verification
+## Verification scope
 
-63 automated tests pass, including CSRF, SSRF allowlisting, bounded requests, secret non-disclosure, provider errors, malicious profile fields, role filtering, no fake data, stale timestamps, mathematical units and rate-limit behavior. Twelve local browser checks pass at desktop and 390px mobile widths. Real Open-Meteo requests returned HTTP 200; provider results remain estimates rather than monitor measurements.
+The 24 November 2026 local release check passes 86 automated tests covering sourced synthetic scenarios, provider contracts, request limits, spoofed headers, stalled streams, stale data, secret non-disclosure, storage and the hosting adapter. Mock provider tests verify behavior, not live model quality. The pinned development dependency audit reports no known advisories; this is not a source-code security guarantee.
 
-The research agent's independent golden tests initially failed important cases. Guidance was corrected to address emergency wording, CO poisoning hazards, heat, respirator dizziness, missing data and unsupported causal claims. All selected automated assertions now pass.
+GitHub CodeQL evidence is recorded in [reports/security-scan.json](reports/security-scan.json), with the exact analyzed commit and workflow link. A scan applies to that revision; local changes require a fresh CI scan. CodeQL and dependency audits are distinct from Codex Security. No completed Codex Security assessment is claimed. Raw diagnostic runs are kept outside this checkout.
 
-**This is not a Codex Security scan report.** The Codex Security plugin has been suggested but is not connected and its scanner has not run. Do not describe these tests as a completed platform security scan or proof of no vulnerabilities.
+## Operational limits
 
-## GitHub CodeQL static analysis
+In-memory rate limits are per instance, not a durable shared quota. Use platform rate controls and provider spending limits for high-traffic paid deployments. Origin checks are not account authentication. Hosting authentication, transport and edge policy remain platform responsibilities. Browser storage is device-scoped, not encrypted medical storage. Passing tests or scans does not establish absence of vulnerabilities.
 
-[Extended CodeQL scan](https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45204916345) completed successfully on 23 November 2026. CodeQL 2.27.5 analyzed JavaScript/TypeScript with 103 rules and GitHub Actions with 23 rules, reporting zero results; the open-alert query also returned zero. The scanned source commit is recorded in [reports/security-scan.json](reports/security-scan.json). Documentation and CI additions after that commit trigger subsequent scans and are reported separately.
-
-This is an actual GitHub CodeQL scan, not a Codex Security plugin scan. Static analysis has limits and does not establish that no vulnerabilities exist. The submission-check workflow also builds the artifacts, runs all tests and checks source size and tracked-secret-file exclusions with read-only repository permissions and pinned official actions.
-
-## Remaining limitations
-
-- In-memory throttling is best effort per Worker isolate; it is not a global budget or durable distributed rate limiter. Before enabling a paid model on a public high-traffic site, add a platform-enforced distributed quota and set provider spending controls.
-- Prompt injection is constrained by server-owned instructions and deterministic hazard routes, but cannot be proven eliminated. Thirteen selected live answers have been semantically reviewed: six pass and seven partial; this is not full golden-set acceptance.
-- API fixtures test integration contracts, not provider reliability or model quality. Clinical and accessibility certification are out of scope; keyboard/dialog semantics and responsive behavior have been checked.
-- Hosted authentication, transport security and edge access policy are platform responsibilities. UI browser storage is device-scoped, not encrypted personal health storage.
-- Operational dependency: provider availability, current terms and correct runtime secret configuration. No security guarantees are implied by passing tests.
-
-Do not put real vulnerability details or secrets in public issues. Reproduce issues locally using synthetic data and share privately with the project owner.
-
-Gemini-specific checks verify header-only secret transport, a fixed upstream host, bounded role-filtered history, exclusion of thought parts, rejection of truncated or blocked responses, safe provider error classification and the exact mixed-case Vercel secret alias.
-
-Latest recheck (24 November 2026): source commit 8246e98df0e81243d8ae2d3ae0f5431c74eb6396 passed CodeQL and CI. Open alerts: zero. Three intentional flows in the manual evaluator were reviewed and dismissed as used in tests: public synthetic data sent to the fixed project endpoint, and model-response JSON saved to a fixed report path. This is not zero raw findings. No Codex Security scan was run.
+Report reproducible security concerns privately to the repository owner using synthetic data. Never include credentials or personal health information in public issues.

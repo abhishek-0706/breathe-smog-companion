@@ -1,0 +1,6 @@
+node_modules/
+dist/
+public/
+.sites-runtime/
+.vercel/
+reports/

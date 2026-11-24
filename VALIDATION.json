@@ -1,102 +1,45 @@
 {
   "verified_on": "2026-11-24",
+  "scope": "Local release source. Hosted CI and deployment evidence are revision-specific and recorded separately.",
   "automated_tests": {
-    "total": 74,
-    "passed": 74,
-    "failed": 0,
-    "command": "npm test",
-    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45249478815",
-    "ci_source_commit": "8246e98df0e81243d8ae2d3ae0f5431c74eb6396"
+    "total": 86,
+    "passed": 86,
+    "command": "npm run build && npm test",
+    "provider_calls": "Mocked; no live model-accuracy claim"
   },
   "golden_dataset": {
     "cases": 30,
     "critical_cases": 15,
     "kind": "Researched synthetic scenarios with primary-source references",
-    "coverage": "Selected lexical/behavioral assertions; not full semantic or clinical certification"
+    "limits": "Targeted behavior and lexical assertions; not clinical certification or exhaustive semantic acceptance"
   },
-  "browser_checks": {
-    "passed": 12,
-    "desktop_width": 1600,
-    "mobile_width": 390,
-    "browser": "Microsoft Edge headless",
-    "scope": "Overview, no overflow, settings, profile save and reload, checklist, calculator, community pledge, indoor page, emergency reply, mobile dialog",
-    "original_checks_verified_on": "2026-11-19",
-    "public_preview_captured_on": "2026-11-23",
-    "public_preview_scope": "Nine real app scenes, including profile, checklist, calculator, pledges, labeled provider fallback and deterministic emergency guidance."
+  "dependency_audit": {
+    "report": "reports/dependency-audit.json",
+    "runtime_dependencies": 0,
+    "known_advisories": 0
   },
-  "real_data": {
-    "provider": "Open-Meteo / CAMS",
-    "integration": "Verified HTTP 200 from local app and public Vercel endpoint with actual provider data",
-    "kind": "Live retrieved modeled outdoor estimate, not a sensor reading",
-    "fake_fallback": false
+  "codeql": {
+    "report": "reports/security-scan.json",
+    "scope": "The report identifies its exact analyzed commit"
+  },
+  "data": {
+    "provider": "Open-Meteo / CAMS atmospheric models",
+    "kind": "Modeled outdoor estimate, not an indoor or street sensor measurement",
+    "index": "U.S. AQI; differs from CPCB"
   },
   "genai": {
-    "provider": "Google Gemini",
-    "configured": true,
-    "model": "gemini-3.1-flash-lite",
-    "live_model_evaluation": true,
-    "http_success": 13,
-    "generated_answers": 11,
-    "curated_safety_answers": 2,
-    "semantic_review": {
-      "pass": 6,
-      "partial": 7,
-      "fail": 0,
-      "full_acceptance": false,
-      "report": "reports/live-semantic-review.json"
-    },
-    "availability": "Successful selected live run; earlier capacity failures recorded separately. Future uptime not guaranteed."
+    "integration": "Server-side Google Gemini; optional OpenAI support",
+    "limits": "Availability and factual accuracy require live evaluation; curated safety responses are labeled"
   },
-  "security": {
-    "application_security_tests": "Passed",
-    "known_secret_pattern_check": "Passed",
-    "codex_security_scan": "Not run; plugin connection pending",
-    "guarantee_of_no_vulnerabilities": false,
-    "codeql": {
-      "conclusion": "success",
-      "open_alerts": 0,
-      "rules_count": 103,
-      "version": "2.27.5",
-      "source_commit": "8246e98df0e81243d8ae2d3ae0f5431c74eb6396",
-      "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45249479519",
-      "actions_rules_count": 23,
-      "reviewed_test_alerts": 3
-    }
+  "privacy": "Raw diagnostics and submission administration are kept outside the public checkout.",
+  "public_links": {
+    "repository": "https://github.com/abhishek-0706/breathe-smog-companion",
+    "application": "https://breathe-smog-companion.vercel.app"
   },
-  "deployment": {
-    "url": "https://breathe-smog-companion.vercel.app",
-    "verified": true,
-    "platform": "Vercel",
-    "state": "READY",
-    "audience": "Public production URL; preview deployments require authentication",
-    "unauthenticated_probe_http_status": 200,
-    "public_access": "Explicitly approved; verified without authentication"
-  },
-  "github": {
-    "published": true,
-    "public": true,
-    "url": "https://github.com/abhishek-0706/breathe-smog-companion",
-    "branch": "main"
-  },
-  "submission": {
-    "ready": false,
-    "linkedin": "Skipped at user request",
-    "required_pending": [
-      "Resolve incomplete answer coverage in live semantic review",
-      "Accepted-host final demo video URL"
-    ],
-    "form_constraint": "LinkedIn URL is shown as mandatory in supplied form; user has declined posting.",
-    "demo_preview": "../Breathe_Demo_Provider_Outage_Preview.mp4 (local artifact; not an accepted-host submission URL)"
-  },
-  "latest_live_recheck": {
-    "report": "reports/live-genai-evaluation.json",
-    "flags": "reports/submission-flags.json",
-    "ai_passed": true,
-    "semantic_acceptance": false
-  },
-  "drive_upload": {
-    "uploaded": false,
-    "reason": "Google Drive integration disabled by workspace administrator",
-    "manual_bundle": "../Breathe_Drive_Upload.zip"
+  "browser_checks": {
+    "passed": 20,
+    "audits": 9,
+    "automated_violations": 0,
+    "report": "reports/browser-checks.json"
   }
 }
