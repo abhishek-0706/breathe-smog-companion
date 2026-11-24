@@ -1,0 +1,45 @@
+{
+  "verified_on": "2026-11-24",
+  "application": "https://breathe-smog-companion.vercel.app",
+  "deployed_source_commit": "36f994291531f5b59eda5f26838a495a724c81da",
+  "deployment_id": "dpl_6DgD7BUFx3WBe6ttgdkeXkHUe5j8",
+  "unauthenticated_homepage_status": 200,
+  "status_endpoint_status": 200,
+  "air_endpoint_status": 200,
+  "air_source": "Actual Open-Meteo / CAMS modeled data; not an indoor sensor",
+  "final_response_checks_passed": 6,
+  "checks": [
+    {
+      "id": "heat",
+      "status": 200,
+      "mode": "safety-guidance"
+    },
+    {
+      "id": "boundary100",
+      "status": 200,
+      "mode": "reference-guidance"
+    },
+    {
+      "id": "boundary200",
+      "status": 200,
+      "mode": "reference-guidance"
+    },
+    {
+      "id": "outage",
+      "status": 200,
+      "mode": "reference-guidance"
+    },
+    {
+      "id": "stale",
+      "status": 200,
+      "mode": "reference-guidance"
+    },
+    {
+      "id": "generated",
+      "status": 200,
+      "mode": "generative"
+    }
+  ],
+  "actual_gemini_generations": 1,
+  "limits": "Scoped response assertions and manual review of this generated answer. Not full golden-set semantic acceptance, guaranteed uptime or a guarantee of factual accuracy."
+}

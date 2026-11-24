@@ -5,7 +5,9 @@
     "total": 88,
     "passed": 88,
     "command": "npm run build && npm test",
-    "provider_calls": "Mocked; no live model-accuracy claim"
+    "provider_calls": "Mocked; no live model-accuracy claim",
+    "ci_source_commit": "4ce12d330477425ea16b3606e9730e86c32f3fc3",
+    "ci_run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45316275242"
   },
   "golden_dataset": {
     "cases": 30,
@@ -41,5 +43,10 @@
     "audits": 9,
     "automated_violations": 0,
     "report": "reports/browser-checks.json"
+  },
+  "production_checks": {
+    "report": "reports/production-checks.json",
+    "response_checks_passed": 6,
+    "runtime_source_commit": "36f994291531f5b59eda5f26838a495a724c81da"
   }
 }

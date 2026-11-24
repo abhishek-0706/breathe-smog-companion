@@ -1,22 +1,26 @@
 {
-  "verified_on": "2026-11-23",
+  "verified_on": "2026-11-24",
   "tool": "GitHub CodeQL",
   "version": "2.27.5",
   "query_suite": "extended",
-  "language": "javascript-typescript",
-  "analysis_id": 2231002218,
-  "run_id": 45204916345,
-  "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45204916345",
-  "commit_sha": "a4ef1bb3d4ab6db5f81a5564130b99b4c8ab3623",
-  "rules_count": 103,
-  "results_count": 0,
-  "open_alerts_at_verification": 0,
+  "commit_sha": "4ce12d330477425ea16b3606e9730e86c32f3fc3",
   "conclusion": "success",
-  "scope_limit": "Static analysis of the referenced commit. Not a guarantee of no vulnerabilities; not a Codex Security scan.",
-  "additional_analysis": {
-    "language": "actions",
-    "analysis_id": 2230997943,
-    "rules_count": 23,
-    "results_count": 0
-  }
+  "run_id": 45316275013,
+  "run_url": "https://github.com/abhishek-0706/breathe-smog-companion/actions/runs/45316275013",
+  "analyses": [
+    {
+      "language": "javascript-typescript",
+      "analysis_id": 2235670185,
+      "rules_count": 103
+    },
+    {
+      "language": "actions",
+      "analysis_id": 2235669163,
+      "rules_count": 23
+    }
+  ],
+  "open_alerts_at_verification": 0,
+  "reviewed_intentional_test_flows": 4,
+  "review_scope": "Public synthetic questions sent to the fixed project endpoint and untrusted diagnostic content saved to constant private report paths. Reviewed as used in tests; not deployed handlers. Zero unresolved alerts does not mean zero raw scanner results.",
+  "scope_limit": "Applies to the referenced commit. Static analysis does not establish absence of vulnerabilities. This is not a completed Codex Security scan."
 }

@@ -21,3 +21,5 @@ reports/browser-accessibility.json
 reports/submission-flags.json
 reports/challenge-evaluation-baseline.json
 SUBMISSION_FIELDS.json
+reports/*failure*
+reports/*failed*
