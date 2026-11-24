@@ -26,6 +26,10 @@ const css = await transform(await readFile("web/style.css", "utf8"), {
   minify: true,
 });
 export const staticAssets = {
+  "/favicon.svg": {
+    body: await readFile("web/favicon.svg", "utf8"),
+    type: "image/svg+xml",
+  },
   "/": {
     body: await readFile("web/index.html", "utf8"),
     type: "text/html; charset=utf-8",

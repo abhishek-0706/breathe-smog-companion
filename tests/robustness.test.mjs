@@ -522,3 +522,61 @@ test("optimized first-load browser assets stay within a compact transfer budget"
   }
   assert.ok(bytes < 48 * 1024, "First-load gzip equivalent exceeds 48 KiB");
 });
+
+test("fractional AQI cannot display an integer with a conflicting category", async () => {
+  const { category } = await import("../lib/guidance.mjs");
+  for (const [value, expected] of [
+    [50.49, "Good"],
+    [50.5, "Moderate"],
+    [100.49, "Moderate"],
+    [100.5, "Unhealthy for sensitive groups"],
+    [150.49, "Unhealthy for sensitive groups"],
+    [150.5, "Unhealthy"],
+    [200.49, "Unhealthy"],
+    [200.5, "Very unhealthy"],
+    [300.5, "Hazardous"],
+  ]) {
+    const fixture = airFixture();
+    fixture.current.us_aqi = value;
+    fixture.hourly = { time: [fixture.current.time], us_aqi: [value] };
+    await mocked(
+      async () => Response.json(fixture),
+      async () => {
+        const air = await liveAir("London", {});
+        assert.equal(air.current.us_aqi, Math.round(value));
+        assert.equal(category(air.current.us_aqi).label, expected);
+        assert.deepEqual(air.hourly.us_aqi, [Math.round(value)]);
+      },
+    );
+  }
+});
+
+test("pediatric respirator fit advice is sourced and independent of model availability", async () => {
+  await mocked(
+    () => assert.fail("Pediatric fit guidance must not require a model"),
+    async () => {
+      for (const question of [
+        "Can my toddler use my adult N95 outdoors in heavy smog?",
+        "Can my baby wear my FFP2?",
+        "What respirator fits a 7-year-old?",
+        "Which mask should children use?",
+      ]) {
+        const response = await worker.fetch(
+          request("/api/chat", { question }),
+          { GEMINI_API_KEY: "dummy-test-key" },
+        );
+        assert.equal(response.status, 200);
+        const data = await response.json();
+        assert.equal(data.mode, "safety-guidance");
+        assert.match(data.answer, /may not fit|seal properly/);
+        assert.match(data.answer, /pediatric clinician/);
+        assert.match(data.answer, /cleaner indoor air/);
+        assert.ok(
+          data.answer.includes(
+            "Source: https://www.cdc.gov/wildfires/risk-factors/wildfire-smoke-and-children.html",
+          ),
+        );
+      }
+    },
+  );
+});

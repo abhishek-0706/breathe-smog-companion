@@ -32,7 +32,10 @@ export async function liveAir(city, env) {
   if (modeledAt === null) throw new Error("invalid provider timestamp");
   const age = Date.now() - modeledAt;
   const stale = age > 3 * 3600000 || age < -3600000;
-  const current = { time: raw.current.time, us_aqi: raw.current.us_aqi };
+  const current = {
+    time: raw.current.time,
+    us_aqi: Math.round(raw.current.us_aqi),
+  };
   for (const key of ["pm2_5", "pm10", "nitrogen_dioxide", "ozone"])
     current[key] =
       Number.isFinite(raw.current[key]) && raw.current[key] >= 0
@@ -50,7 +53,7 @@ export async function liveAir(city, env) {
         v >= 0 &&
         v <= 2000
       ) {
-        if (!hourlyValues.has(time)) hourlyValues.set(time, v);
+        if (!hourlyValues.has(time)) hourlyValues.set(time, Math.round(v));
       }
     });
   }
